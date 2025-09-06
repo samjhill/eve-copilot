@@ -13,6 +13,13 @@ pygame>=2.5.0
 # Cross-platform support
 psutil>=5.9.0
 
+# Web dashboard
+flask>=2.3.0
+flask-socketio>=5.3.0
+
+# Async file operations
+aiofiles>=23.0.0
+
 # Development and testing
 pytest>=7.4.0
 pytest-cov>=4.1.0

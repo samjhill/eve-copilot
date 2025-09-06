@@ -37,6 +37,39 @@ class EventType(Enum):
     WAVE_TRANSITION = "WaveTransition"
     CARGO_APPROACH = "CargoApproach"
     
+    # Navigation events
+    WARP_START = "WarpStart"
+    WARP_END = "WarpEnd"
+    DOCK_REQUEST = "DockRequest"
+    UNDOCK_REQUEST = "UndockRequest"
+    DOCKED = "Docked"
+    UNDOCKED = "Undocked"
+    JUMP_GATE = "JumpGate"
+    JUMP_WORMHOLE = "JumpWormhole"
+    
+    # Fleet events
+    FLEET_JOIN = "FleetJoin"
+    FLEET_LEAVE = "FleetLeave"
+    FLEET_WARP = "FleetWarp"
+    FLEET_BROADCAST = "FleetBroadcast"
+    
+    # Market events
+    MARKET_ORDER = "MarketOrder"
+    CONTRACT_OFFER = "ContractOffer"
+    CONTRACT_ACCEPTED = "ContractAccepted"
+    
+    # Industry events
+    MANUFACTURING_START = "ManufacturingStart"
+    MANUFACTURING_COMPLETE = "ManufacturingComplete"
+    RESEARCH_START = "ResearchStart"
+    RESEARCH_COMPLETE = "ResearchComplete"
+    
+    # Chat events
+    LOCAL_CHAT = "LocalChat"
+    FLEET_CHAT = "FleetChat"
+    CORP_CHAT = "CorpChat"
+    ALLIANCE_CHAT = "AllianceChat"
+    
     # Legacy event types (for backward compatibility)
     YOU_SCRAMMED = "YouScrammed"
     YOU_WEBBED = "YouWebbed"

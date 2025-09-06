@@ -233,6 +233,19 @@ class LogParser:
                 return self._create_shield_status_event(groups, timestamp, raw_line, source_file)
             elif event_type == "CAPACITOR_STATUS":
                 return self._create_capacitor_status_event(groups, timestamp, raw_line, source_file)
+            # Navigation events
+            elif event_type in ["WARP_START", "WARP_END", "DOCK_REQUEST", "UNDOCK_REQUEST", 
+                               "DOCKED", "UNDOCKED", "JUMP_GATE", "JUMP_WORMHOLE"]:
+                event_type_enum = EventType(event_type)
+                return self._create_navigation_event(event_type_enum, groups, timestamp, raw_line, source_file)
+            # Fleet events
+            elif event_type in ["FLEET_JOIN", "FLEET_LEAVE", "FLEET_WARP", "FLEET_BROADCAST"]:
+                event_type_enum = EventType(event_type)
+                return self._create_fleet_event(event_type_enum, groups, timestamp, raw_line, source_file)
+            # Chat events
+            elif event_type in ["LOCAL_CHAT", "FLEET_CHAT", "CORP_CHAT", "ALLIANCE_CHAT"]:
+                event_type_enum = EventType(event_type)
+                return self._create_chat_event(event_type_enum, groups, timestamp, raw_line, source_file)
             else:
                 logger.warning(f"Unknown event type: {event_type}")
                 return None
@@ -253,7 +266,7 @@ class LogParser:
             source_file=source_file
         )
     
-    def _create_wave_transition_wait_event(self, timestamp: datetime, raw_line: str, 
+    def _create_wave_transition_wait_event(self, timestamp: datetime, raw_line: str,
                                          source_file: Optional[str]) -> GameEvent:
         """Create wave transition wait event."""
         return GameEvent(
@@ -263,6 +276,72 @@ class LogParser:
             meta={"effect": "wave_transition"},
             raw_line=raw_line,
             source_file=source_file
+        )
+    
+    def _create_navigation_event(self, event_type: EventType, groups: tuple, timestamp: datetime,
+                                raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create navigation event (warp, dock, undock, etc.)."""
+        if len(groups) < 1:
+            logger.warning(f"Insufficient groups for navigation event: {len(groups)}")
+            return None
+        
+        # Extract destination/station name if available
+        destination = groups[1] if len(groups) > 1 else "Unknown"
+        
+        return GameEvent(
+            type=event_type,
+            timestamp=timestamp,
+            subject=destination,
+            meta={"destination": destination},
+            raw_line=raw_line,
+            source_file=source_file
+        )
+    
+    def _create_fleet_event(self, event_type: EventType, groups: tuple, timestamp: datetime,
+                           raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create fleet event."""
+        if len(groups) < 1:
+            logger.warning(f"Insufficient groups for fleet event: {len(groups)}")
+            return None
+        
+        # Extract destination if available (for fleet warp)
+        destination = groups[1] if len(groups) > 1 else None
+        
+        meta = {}
+        if destination:
+            meta["destination"] = destination
+        
+        return GameEvent(
+            type=event_type,
+            timestamp=timestamp,
+            subject="Fleet",
+            meta=meta,
+            raw_line=raw_line,
+            source_file=source_file
+        )
+    
+    def _create_chat_event(self, event_type: EventType, groups: tuple, timestamp: datetime,
+                          raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create chat event."""
+        if len(groups) < 3:
+            logger.warning(f"Insufficient groups for chat event: {len(groups)}")
+            return None
+        
+        sender = groups[1]
+        message = groups[2]
+        
+        return GameEvent(
+            type=event_type,
+            timestamp=timestamp,
+            subject=sender,
+            meta={
+                "sender": sender,
+                "message": message,
+                "channel": event_type.value.lower().replace('_', ' ')
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=2  # Chat events are low priority
         )
     
     def _create_incoming_damage_event(self, groups: tuple, timestamp: datetime, 

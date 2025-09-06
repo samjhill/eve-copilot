@@ -16,6 +16,99 @@ wave_transition_wait:
   groups: ["timestamp"]
   description: "Wave transition in progress (Please wait message)"
 
+# Navigation events
+warp_start:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Warping\\s+to\\s+([^,]+),"
+  event_type: "WARP_START"
+  groups: ["timestamp", "destination"]
+  description: "Warp started to destination"
+
+warp_end:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Warp\\s+complete"
+  event_type: "WARP_END"
+  groups: ["timestamp"]
+  description: "Warp completed"
+
+dock_request:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Requesting\\s+docking\\s+permission"
+  event_type: "DOCK_REQUEST"
+  groups: ["timestamp"]
+  description: "Docking permission requested"
+
+undock_request:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Undocking\\s+from\\s+([^,]+)"
+  event_type: "UNDOCK_REQUEST"
+  groups: ["timestamp", "station"]
+  description: "Undocking from station"
+
+docked:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Docked\\s+at\\s+([^,]+)"
+  event_type: "DOCKED"
+  groups: ["timestamp", "station"]
+  description: "Successfully docked at station"
+
+undocked:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Undocked\\s+from\\s+([^,]+)"
+  event_type: "UNDOCKED"
+  groups: ["timestamp", "station"]
+  description: "Successfully undocked from station"
+
+jump_gate:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Jumping\\s+through\\s+([^,]+)"
+  event_type: "JUMP_GATE"
+  groups: ["timestamp", "gate"]
+  description: "Jumping through stargate"
+
+jump_wormhole:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Jumping\\s+through\\s+wormhole"
+  event_type: "JUMP_WORMHOLE"
+  groups: ["timestamp"]
+  description: "Jumping through wormhole"
+
+# Fleet events
+fleet_join:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+You\\s+have\\s+joined\\s+fleet"
+  event_type: "FLEET_JOIN"
+  groups: ["timestamp"]
+  description: "Joined fleet"
+
+fleet_leave:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+You\\s+have\\s+left\\s+fleet"
+  event_type: "FLEET_LEAVE"
+  groups: ["timestamp"]
+  description: "Left fleet"
+
+fleet_warp:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Fleet\\s+warp\\s+to\\s+([^,]+)"
+  event_type: "FLEET_WARP"
+  groups: ["timestamp", "destination"]
+  description: "Fleet warp initiated"
+
+# Chat events
+local_chat:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(local\\)\\s+([^:]+):\\s+(.+)"
+  event_type: "LOCAL_CHAT"
+  groups: ["timestamp", "sender", "message"]
+  description: "Local chat message"
+
+fleet_chat:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(fleet\\)\\s+([^:]+):\\s+(.+)"
+  event_type: "FLEET_CHAT"
+  groups: ["timestamp", "sender", "message"]
+  description: "Fleet chat message"
+
+corp_chat:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(corp\\)\\s+([^:]+):\\s+(.+)"
+  event_type: "CORP_CHAT"
+  groups: ["timestamp", "sender", "message"]
+  description: "Corporation chat message"
+
+alliance_chat:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(alliance\\)\\s+([^:]+):\\s+(.+)"
+  event_type: "ALLIANCE_CHAT"
+  groups: ["timestamp", "sender", "message"]
+  description: "Alliance chat message"
+
 # Combat damage events (incoming damage) - FIXED to include various damage types
 incoming_damage:
   regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+<color=0xffcc0000><b>(\\d+)</b>\\s+<color=0x77ffffff><font\\s+size=10>from</font>\\s+<b><color=0xffffffff>([^<]+)</b>.*?\\s+-\\s+(Hits|Smashes|Penetrates|Grazes|Glances)"
