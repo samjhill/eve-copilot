@@ -143,8 +143,8 @@ class Pyttsx3Engine(TTSEngine):
     """pyttsx3 TTS engine (offline, basic quality)."""
     
     def __init__(self, config: Dict[str, Any]):
-        self.name = "pyttsx3"
         super().__init__(config)
+        self.name = "pyttsx3"
     
     def _init_engine(self) -> None:
         """Initialize the pyttsx3 engine."""
@@ -256,9 +256,9 @@ class GTTSEngine(TTSEngine):
     """Google Text-to-Speech engine (online, high quality)."""
     
     def __init__(self, config: Dict[str, Any]):
-        self.name = "gtts"
         self.temp_dir = Path(tempfile.gettempdir()) / "eve_copilot_tts"
         super().__init__(config)
+        self.name = "gtts"
         self.language = self.config.get('gtts_language', 'en')
         self.slow = self.config.get('gtts_slow', False)
     
@@ -329,9 +329,9 @@ class EdgeTTSEngine(TTSEngine):
     """Microsoft Edge TTS engine (offline, high quality)."""
     
     def __init__(self, config: Dict[str, Any]):
-        self.name = "edge-tts"
         self.temp_dir = Path(tempfile.gettempdir()) / "eve_copilot_tts"
         super().__init__(config)
+        self.name = "edge-tts"
         self.voice = self.config.get('edge_voice', 'en-US-AriaNeural')
         self.rate = self.config.get('edge_rate', '+0%')
         self.volume = self.config.get('edge_volume', '+0%')

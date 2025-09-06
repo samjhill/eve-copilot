@@ -139,16 +139,16 @@ rules:
     voice_prompt: "Damage spike"
     description: "Sensitive damage spike detection for Abyssal scenarios"
 
-  # Room cleared detection (when defensive modules deactivate after wave completion)
+  # Room cleared detection (when wave transition occurs)
   room_cleared_abyssal:
     enabled: true
-    event_types: ["ModuleDeactivated"]
+    event_types: ["WaveTransitionWait"]
     conditions:
-      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
-    cooldown_ms: 5000        # 5 second cooldown
+      min_events: 1          # Any wave transition event
+    cooldown_ms: 10000       # 10 second cooldown
     priority: 2              # Low priority (informational)
     voice_prompt: "Room cleared"
-    description: "Alert when defensive modules deactivate after clearing a room"
+    description: "Alert when wave transition detected (room cleared)"
 
   # Drone recall reminder when room is cleared
   drone_recall_reminder_abyssal:
@@ -218,13 +218,24 @@ rules:
     voice_prompt: "10 minutes elapsed - check your timer"
     description: "Simple 10-minute timer based on recent abyss entry"
 
+  # Energy neutralization alert
+  energy_neutralization_abyssal:
+    enabled: true
+    event_types: ["EnergyNeutralization"]
+    conditions:
+      min_events: 1          # Any neutralization event
+    cooldown_ms: 5000        # 5 second cooldown
+    priority: 2              # Medium priority (energy management)
+    voice_prompt: "Energy neutralized by {target_name}"
+    description: "Alert when energy is being neutralized"
+
   # Combat detection (only trigger target recommendations during real combat)
   combat_detection_abyssal:
-    enabled: true
+    enabled: false           # Disabled - no audio alert needed
     event_types: ["IncomingDamage"]
     conditions:
       min_events: 1          # Any damage event
-      sustained_damage: 100  # Moderate damage threshold
+      sustained_damage: 20   # Lower threshold for all enemies
     cooldown_ms: 5000        # 5 second cooldown
     window_ms: 2000          # 2 second analysis window
     priority: 3              # Low priority (just for detection)
@@ -237,7 +248,7 @@ rules:
     event_types: ["IncomingDamage"]
     conditions:
       min_events: 1          # Trigger after 1 damage event (immediate response)
-      sustained_damage: 50   # Very low threshold for immediate detection
+      sustained_damage: 20   # Match combat detection threshold
     cooldown_ms: 5000        # 5 second cooldown (very responsive)
     window_ms: 1000          # 1 second analysis window (immediate)
     priority: 1              # Medium priority (tactical)

@@ -204,6 +204,8 @@ class LogParser:
         try:
             if event_type == "SPATIAL_PHENOMENA":
                 return self._create_spatial_phenomena_event(timestamp, raw_line, source_file)
+            elif event_type == "WAVE_TRANSITION_WAIT":
+                return self._create_wave_transition_wait_event(timestamp, raw_line, source_file)
             elif event_type == "INCOMING_DAMAGE":
                 return self._create_incoming_damage_event(groups, timestamp, raw_line, source_file)
             elif event_type == "OUTGOING_DAMAGE":
@@ -216,6 +218,8 @@ class LogParser:
                 return self._create_web_effect_event(groups, timestamp, raw_line, source_file)
             elif event_type == "ENERGY_NEUTRALIZATION":
                 return self._create_energy_neutralization_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "ROOM_CLEARED_MISS":
+                return self._create_room_cleared_miss_event(groups, timestamp, raw_line, source_file)
             elif event_type == "MODULE_ACTIVATION":
                 return self._create_module_activation_event(groups, timestamp, raw_line, source_file)
             elif event_type == "RELOAD_REQUIRED":
@@ -244,15 +248,28 @@ class LogParser:
             source_file=source_file
         )
     
+    def _create_wave_transition_wait_event(self, timestamp: datetime, raw_line: str, 
+                                         source_file: Optional[str]) -> GameEvent:
+        """Create wave transition wait event."""
+        return GameEvent(
+            type=EventType.WAVE_TRANSITION_WAIT,
+            timestamp=timestamp,
+            subject="Wave Transition",
+            meta={"effect": "wave_transition"},
+            raw_line=raw_line,
+            source_file=source_file
+        )
+    
     def _create_incoming_damage_event(self, groups: tuple, timestamp: datetime, 
                                     raw_line: str, source_file: Optional[str]) -> GameEvent:
         """Create incoming damage event."""
-        if len(groups) < 3:
+        if len(groups) < 4:
             logger.warning(f"Insufficient groups for incoming damage: {len(groups)}")
             return None
         
         damage = int(groups[1]) if groups[1] else 0
         from_entity = groups[2] if len(groups) > 2 else "Unknown"
+        damage_type = groups[3] if len(groups) > 3 else "Hits"
         
         return GameEvent(
             type=EventType.INCOMING_DAMAGE,
@@ -260,7 +277,7 @@ class LogParser:
             subject=from_entity,
             meta={
                 "damage": damage,
-                "damage_type": "Kinetic"  # Default, could be enhanced
+                "damage_type": damage_type
             },
             raw_line=raw_line,
             source_file=source_file
@@ -269,12 +286,13 @@ class LogParser:
     def _create_outgoing_damage_event(self, groups: tuple, timestamp: datetime, 
                                     raw_line: str, source_file: Optional[str]) -> GameEvent:
         """Create outgoing damage event."""
-        if len(groups) < 3:
+        if len(groups) < 4:
             logger.warning(f"Insufficient groups for outgoing damage: {len(groups)}")
             return None
         
         damage = int(groups[1]) if groups[1] else 0
         to_entity = groups[2] if len(groups) > 2 else "Unknown"
+        damage_type = groups[3] if len(groups) > 3 else "Hits"
         
         return GameEvent(
             type=EventType.OUTGOING_DAMAGE,
@@ -282,7 +300,7 @@ class LogParser:
             subject=to_entity,
             meta={
                 "damage": damage,
-                "damage_type": "Kinetic"
+                "damage_type": damage_type
             },
             raw_line=raw_line,
             source_file=source_file
@@ -348,17 +366,18 @@ class LogParser:
     def _create_energy_neutralization_event(self, groups: tuple, timestamp: datetime, 
                                           raw_line: str, source_file: Optional[str]) -> GameEvent:
         """Create energy neutralization event."""
-        if len(groups) < 2:
+        if len(groups) < 3:
             logger.warning(f"Insufficient groups for energy neutralization: {len(groups)}")
             return None
         
         amount = int(groups[1]) if groups[1] else 0
+        from_entity = groups[2] if len(groups) > 2 else "Unknown"
         
         return GameEvent(
             type=EventType.ENERGY_NEUTRALIZATION,
             timestamp=timestamp,
-            subject="Energy Neutralization",
-            meta={"amount": amount},
+            subject=from_entity,
+            meta={"amount": amount, "from_entity": from_entity},
             raw_line=raw_line,
             source_file=source_file
         )

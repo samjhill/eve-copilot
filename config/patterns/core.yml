@@ -104,6 +104,13 @@ you_neuted:
   groups: ["timestamp", "entity"]
   description: "You are energy neutralized by an enemy"
 
+# Energy neutralization from combat log
+energy_neutralization:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+<color=0xffe57f7f><b>(\\d+)\\s+GJ</b><color=0x77ffffff><font\\s+size=10>\\s+energy\\s+neutralized\\s+</font><b><color=0xffffffff>([^<]+)</b>"
+  event_type: "ENERGY_NEUTRALIZATION"
+  groups: ["timestamp", "amount", "from_entity"]
+  description: "Energy neutralized by enemy"
+
 # Equipment events
 reload_required:
   regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+([\\w\\s]+)\\s+requires\\s+reload"
@@ -142,3 +149,10 @@ module_deactivated:
   event_type: "MODULE_DEACTIVATED"
   groups: ["timestamp", "module"]
   description: "A module is deactivated"
+
+# Room cleared detection - enemies missing completely
+room_cleared_miss:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+([^\\s]+)\\s+misses\\s+you\\s+completely"
+  event_type: "ROOM_CLEARED_MISS"
+  groups: ["timestamp", "enemy_name"]
+  description: "Enemy misses completely (room cleared indicator)"

@@ -21,6 +21,7 @@ class EventType(Enum):
     WARP_SCRAMBLE = "WarpScramble"
     WEB_EFFECT = "WebEffect"
     ENERGY_NEUTRALIZATION = "EnergyNeutralization"
+    ROOM_CLEARED_MISS = "RoomClearedMiss"
     
     # Equipment events
     MODULE_ACTIVATION = "ModuleActivation"

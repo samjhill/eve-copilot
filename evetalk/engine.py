@@ -417,6 +417,11 @@ class RulesEngine:
                 # Process dynamic voice prompts
                 voice_prompt = self._process_voice_prompt(rule, event)
                 
+                # Skip if voice prompt processing returned None (e.g., target already recommended)
+                if voice_prompt is None:
+                    logger.debug(f"Rule '{rule.name}' skipped (target already recommended)")
+                    return
+                
                 self.speech_notifier.speak(
                     voice_prompt, 
                     priority=rule.priority, 
@@ -444,6 +449,9 @@ class RulesEngine:
         # Handle target recommendation
         if '{target_name}' in voice_prompt:
             target_name = self._get_recommended_target(rule, event)
+            if target_name is None:
+                # Target already recommended recently, don't trigger this rule
+                return None
             voice_prompt = voice_prompt.replace('{target_name}', target_name)
         
         return voice_prompt
@@ -460,6 +468,14 @@ class RulesEngine:
         """
         import time
         current_time = time.time()
+        
+        # Initialize recommended targets tracking if not exists
+        if not hasattr(self, '_recommended_targets'):
+            self._recommended_targets = {}
+        
+        # Clean old recommendations (older than 5 minutes)
+        cutoff_time = current_time - 300  # 5 minutes
+        self._recommended_targets = {k: v for k, v in self._recommended_targets.items() if v > cutoff_time}
         
         # Analyze damage from VERY recent events (last 10 seconds)
         # This ensures we only recommend currently active threats
@@ -494,42 +510,80 @@ class RulesEngine:
         # Apply EVE Abyssal enemy priority rules
         target_name = self._apply_abyssal_priority(target_name)
         
+        # Check if we've already recommended this target type recently
+        if target_name in self._recommended_targets:
+            return None  # Don't repeat recommendations - return None to prevent rule trigger
+        
+        # Mark this target as recommended
+        self._recommended_targets[target_name] = current_time
+        
         return target_name
     
     def _apply_abyssal_priority(self, target_name: str) -> str:
-        """Apply EVE Abyssal enemy priority rules.
+        """Apply EVE Abyssal enemy priority rules based on wiki recommendations.
+        
+        Priority order:
+        1. Electronic Warfare (EWAR) - Neutralizers, webifiers, disruptors
+        2. Remote repair ships - Ships that heal other enemies  
+        3. High damage dealers - Ships that pose the most threat
+        4. Size-based priority - Smaller, faster ships often more dangerous
         
         Args:
             target_name: Original target name
             
         Returns:
-            Prioritized target name
+            Prioritized target name with priority indicator
         """
-        # EVE Abyssal enemy priority (most dangerous first)
+        # EVE Abyssal enemy priority based on wiki recommendations
         priority_keywords = {
-            # Triglavian enemies (highest priority)
-            'Damavik': 'Damavik (Triglavian)',
-            'Kikimora': 'Kikimora (Triglavian)', 
-            'Tessella': 'Tessella (Triglavian)',
-            'Devoted': 'Devoted (Triglavian)',
-            'Torchbearer': 'Torchbearer (Triglavian)',
-            'Hunter': 'Hunter (Triglavian)',
-            'Knight': 'Knight (Triglavian)',
+            # TIER 1 - Electronic Warfare (HIGHEST PRIORITY)
+            'Neutralizer': 'Neutralizer (EWAR)',
+            'Webifier': 'Webifier (EWAR)', 
+            'Disruptor': 'Disruptor (EWAR)',
+            'Painter': 'Painter (EWAR)',
+            'Scrambler': 'Scrambler (EWAR)',
             
-            # Drifter enemies (medium priority)
-            'Drifter': 'Drifter',
-            'Drifter Battleship': 'Drifter Battleship',
-            'Drifter Cruiser': 'Drifter Cruiser',
+            # TIER 2 - Remote Repair Ships (HIGH PRIORITY)
+            'Repair': 'Repair Ship',
+            'Healer': 'Healer',
+            'Support': 'Support Ship',
             
-            # Other enemies (lower priority)
-            'Rogue': 'Rogue',
-            'Pirate': 'Pirate',
-            'Sansha': 'Sansha',
-            'Blood': 'Blood Raider',
-            'Angel': 'Angel Cartel'
+            # TIER 3 - High Damage Dealers (MEDIUM-HIGH PRIORITY)
+            'Damavik': 'Damavik (High DPS)',
+            'Kikimora': 'Kikimora (High DPS)',
+            'Torchbearer': 'Torchbearer (High DPS)',
+            'Hunter': 'Hunter (High DPS)',
+            'Striking': 'Striking (High DPS)',
+            'Blastneedle': 'Blastneedle (High DPS)',
+            'Strikelance': 'Strikelance (High DPS)',
+            'Strikeneedle': 'Strikeneedle (High DPS)',
+            
+            # TIER 4 - Medium Threat (MEDIUM PRIORITY)
+            'Tessella': 'Tessella (Medium)',
+            'Devoted': 'Devoted (Medium)',
+            'Knight': 'Knight (Medium)',
+            'Lucid': 'Lucid (Medium)',
+            'Skybreaker': 'Skybreaker (Medium)',
+            
+            # TIER 5 - Drifter Enemies (MEDIUM-LOW PRIORITY)
+            'Drifter': 'Drifter (Large)',
+            'Drifter Battleship': 'Drifter Battleship (Large)',
+            'Drifter Cruiser': 'Drifter Cruiser (Large)',
+            
+            # TIER 6 - Other Enemies (LOW PRIORITY)
+            'Rogue': 'Rogue (Low)',
+            'Pirate': 'Pirate (Low)',
+            'Sansha': 'Sansha (Low)',
+            'Blood': 'Blood Raider (Low)',
+            'Angel': 'Angel Cartel (Low)',
+            
+            # TIER 7 - Cache/Objective (LOWEST PRIORITY)
+            'Cache': 'Cache (Objective)',
+            'Bioadaptive': 'Bioadaptive Cache (Objective)',
+            'Overmind': 'Overmind (Objective)'
         }
         
-        # Check for priority keywords in target name
+        # Check for priority keywords in target name (case insensitive)
         for keyword, priority_name in priority_keywords.items():
             if keyword.lower() in target_name.lower():
                 return priority_name
