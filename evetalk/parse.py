@@ -407,19 +407,23 @@ class LogParser:
     def _create_drone_hit_event(self, groups: tuple, timestamp: datetime, 
                                raw_line: str, source_file: Optional[str]) -> GameEvent:
         """Create drone hit event."""
-        if len(groups) < 2:
+        if len(groups) < 5:
             logger.warning(f"Insufficient groups for drone hit: {len(groups)}")
             return None
         
-        damage = int(groups[1]) if groups[1] else 0
+        drone_name = groups[1] if len(groups) > 1 else "Unknown"
+        damage = int(groups[2]) if len(groups) > 2 and groups[2] else 0
+        damage_type = groups[3] if len(groups) > 3 else "Kinetic"
+        from_entity = groups[4] if len(groups) > 4 else "Unknown"
         
         return GameEvent(
             type=EventType.DRONE_HIT,
             timestamp=timestamp,
-            subject="Drone",
+            subject=drone_name,
             meta={
                 "damage": damage,
-                "damage_type": "Kinetic"
+                "damage_type": damage_type,
+                "from_entity": from_entity
             },
             raw_line=raw_line,
             source_file=source_file

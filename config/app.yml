@@ -21,7 +21,7 @@ speech:
   
   # TTS Engine selection (in order of preference)
   # Options: edge-tts (best quality, offline), gtts (high quality, online), pyttsx3 (basic, offline)
-  tts_engine: "gtts"
+  tts_engine: "pyttsx3"
   
   # Voice settings for pyttsx3 (fallback engine)
   voice: "Samantha"        # Voice to use (Samantha is clear and natural)
