@@ -1,0 +1,144 @@
+# EVE Copilot - Core Log Parsing Patterns
+# These regex patterns convert raw EVE log lines to structured events
+# Based on actual EVE Online combat log format
+
+# Game notification events (what EVE actually logs)
+spatial_phenomena:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Local\\s+spatial\\s+phenomena\\s+may\\s+cause\\s+strange\\s+effects\\s+on\\s+your\\s+ship\\s+systems\\."
+  event_type: "SPATIAL_PHENOMENA"
+  groups: ["timestamp"]
+  description: "Local spatial phenomena detected (Abyssal effect)"
+
+# NEW: Wave transition "Please wait..." message
+wave_transition_wait:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Please\\s+wait\\.\\.\\."
+  event_type: "WAVE_TRANSITION_WAIT"
+  groups: ["timestamp"]
+  description: "Wave transition in progress (Please wait message)"
+
+# Combat damage events (incoming damage) - FIXED to include various damage types
+incoming_damage:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+<color=0xffcc0000><b>(\\d+)</b>\\s+<color=0x77ffffff><font\\s+size=10>from</font>\\s+<b><color=0xffffffff>([^<]+)</b>.*?\\s+-\\s+(Hits|Smashes|Penetrates|Grazes|Glances)"
+  event_type: "INCOMING_DAMAGE"
+  groups: ["timestamp", "damage", "from_entity", "damage_type"]
+  description: "You take damage from an enemy"
+
+# Combat damage events (outgoing damage) - FIXED to include various damage types
+outgoing_damage:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+<color=0xff00ffff><b>(\\d+)</b>\\s+<color=0x77ffffff><font\\s+size=10>to</font>\\s+<b><color=0xffffffff>([^<]+)</b>.*?\\s+-\\s+(Hits|Smashes|Penetrates|Grazes|Glances)"
+  event_type: "OUTGOING_DAMAGE"
+  groups: ["timestamp", "damage", "target_entity", "damage_type"]
+  description: "You deal damage to an enemy"
+
+# Module loading notifications
+module_loading:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Loading\\s+the\\s+([^;]+);\\s+this\\s+will\\s+take\\s+approximately\\s+(\\d+)\\s+seconds\\."
+  event_type: "MODULE_LOADING"
+  groups: ["timestamp", "module", "duration"]
+  description: "Module is loading ammo/charges"
+
+# Module deactivation notifications
+module_deactivation:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+([^\\s]+(?:\\s+[^\\s]+)*?)\\s+deactivates\\s+as\\s+the\\s+item\\s+it\\s+was\\s+targeted\\s+at\\s+is\\s+no\\s+longer\\s+present\\."
+  event_type: "MODULE_DEACTIVATED"
+  groups: ["timestamp", "module"]
+  description: "Module deactivates when target is destroyed"
+
+# Cargo approach notifications
+cargo_approach:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Cargo\\s+is\\s+too\\s+far\\s+away\\.\\s+Ship\\s+is\\s+on\\s+automatic\\s+approach\\s+to\\s+cargo\\."
+  event_type: "CARGO_APPROACH"
+  groups: ["timestamp"]
+  description: "Ship automatically approaching cargo"
+
+# Target limit notifications
+target_limit:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+You\\s+are\\s+already\\s+managing\\s+(\\d+)\\s+targets,\\s+as\\s+many\\s+as\\s+your\\s+ship's\\s+electronics\\s+are\\s+capable\\s+of\\."
+  event_type: "MODULE_ACTIVATED"
+  groups: ["timestamp", "target_count"]
+  description: "Maximum targets reached"
+
+# Ship stopping notifications
+ship_stopping:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Ship\\s+stopping"
+  event_type: "MODULE_DEACTIVATED"
+  groups: ["timestamp"]
+  description: "Ship is stopping movement"
+
+# Module manual deactivation warnings
+module_manual_deactivation:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+The\\s+([^\\s]+(?:\\s+[^\\s]+)*?)\\s+cannot\\s+be\\s+manually\\s+deactivated\\s+in\\s+the\\s+middle\\s+of\\s+an\\s+operation"
+  event_type: "MODULE_ACTIVATED"
+  groups: ["timestamp", "module"]
+  description: "Module cannot be manually deactivated during operation"
+
+# Legacy patterns (keeping for compatibility)
+drone_hit:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+Your\\s+([\\w\\s]+)\\s+has\\s+taken\\s+(\\d+)\\s+(\\w+)\\s+damage\\s+from\\s+(\\w+)"
+  event_type: "DRONE_HIT"
+  groups: ["timestamp", "drone_name", "damage", "damage_type", "from_entity"]
+  description: "Your drone takes damage from an enemy"
+
+drone_destroyed:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+Your\\s+([\\w\\s]+)\\s+has\\s+been\\s+destroyed"
+  event_type: "DRONE_DESTROYED"
+  groups: ["timestamp", "drone_name"]
+  description: "Your drone is destroyed"
+
+# E-war events
+you_scrammed:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+You\\s+are\\s+warp\\s+scrambled\\s+by\\s+(\\w+)"
+  event_type: "YOU_SCRAMMED"
+  groups: ["timestamp", "entity"]
+  description: "You are warp scrambled by an enemy"
+
+you_webbed:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+You\\s+are\\s+webbed\\s+by\\s+(\\w+)"
+  event_type: "YOU_WEBBED"
+  groups: ["timestamp", "entity"]
+  description: "You are webbed by an enemy"
+
+you_neuted:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+You\\s+are\\s+energy\\s+neutralized\\s+by\\s+(\\w+)"
+  event_type: "YOU_NEUTED"
+  groups: ["timestamp", "entity"]
+  description: "You are energy neutralized by an enemy"
+
+# Equipment events
+reload_required:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+([\\w\\s]+)\\s+requires\\s+reload"
+  event_type: "RELOAD_REQUIRED"
+  groups: ["timestamp", "module"]
+  description: "A module requires reloading"
+
+charges_depleted:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+([^\\s]+(?:\\s+[^\\s]+)*?)\\s+has\\s+run\\s+out\\s+of\\s+charges"
+  event_type: "CHARGES_DEPLETED"
+  groups: ["timestamp", "module"]
+  description: "Module has run out of charges/ammo"
+
+# Status events
+shield_low:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+Shield\\s+level\\s+(\\d+)%"
+  event_type: "SHIELD_LOW"
+  groups: ["timestamp", "shield_percent"]
+  description: "Shield level is low"
+
+cap_low:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+Capacitor\\s+level\\s+(\\d+)%"
+  event_type: "CAP_LOW"
+  groups: ["timestamp", "cap_percent"]
+  description: "Capacitor level is low"
+
+# Module activation events
+module_activated:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+([\\w\\s]+)\\s+activated"
+  event_type: "MODULE_ACTIVATED"
+  groups: ["timestamp", "module"]
+  description: "A module is activated"
+
+module_deactivated:
+  regex: "(\\d{4}\\.\\d{2}\\.\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+([\\w\\s]+)\\s+deactivated"
+  event_type: "MODULE_DEACTIVATED"
+  groups: ["timestamp", "module"]
+  description: "A module is deactivated"

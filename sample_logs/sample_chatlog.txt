@@ -1,0 +1,36 @@
+2025.01.28 14:30:15	You take 45 Thermal damage from Damavik
+2025.01.28 14:30:16	Your Hobgoblin II has taken 62 Thermal damage from Damavik
+2025.01.28 14:30:17	You take 38 Thermal damage from Damavik
+2025.01.28 14:30:18	Your Hobgoblin II has taken 55 Thermal damage from Damavik
+2025.01.28 14:30:19	You are warp scrambled by Damavik
+2025.01.28 14:30:20	You take 42 Thermal damage from Damavik
+2025.01.28 14:30:21	Your Hobgoblin II has taken 48 Thermal damage from Damavik
+2025.01.28 14:30:22	You take 41 Thermal damage from Damavik
+2025.01.28 14:30:23	Shield Booster requires reload
+2025.01.28 14:30:24	You take 39 Thermal damage from Damavik
+2025.01.28 14:30:25	Your Hobgoblin II has taken 51 Thermal damage from Damavik
+2025.01.28 14:30:26	You take 44 Thermal damage from Damavik
+2025.01.28 14:30:27	You are webbed by Damavik
+2025.01.28 14:30:28	You take 37 Thermal damage from Damavik
+2025.01.28 14:30:29	Your Hobgoblin II has taken 59 Thermal damage from Damavik
+2025.01.28 14:30:30	Shield level 35%
+2025.01.28 14:30:31	You take 43 Thermal damage from Damavik
+2025.01.28 14:30:32	Your Hobgoblin II has taken 47 Thermal damage from Damavik
+2025.01.28 14:30:33	You take 40 Thermal damage from Damavik
+2025.01.28 14:30:34	Capacitor level 18%
+2025.01.28 14:30:35	You take 46 Thermal damage from Damavik
+2025.01.28 14:30:36	Your Hobgoblin II has taken 53 Thermal damage from Damavik
+2025.01.28 14:30:37	You take 41 Thermal damage from Damavik
+2025.01.28 14:30:38	Your Hobgoblin II has taken 58 Thermal damage from Damavik
+2025.01.28 14:30:39	You take 39 Thermal damage from Damavik
+2025.01.28 14:30:40	Shield Booster activated
+2025.01.28 14:30:41	You take 42 Thermal damage from Damavik
+2025.01.28 14:30:42	Your Hobgoblin II has taken 49 Thermal damage from Damavik
+2025.01.28 14:30:43	You take 38 Thermal damage from Damavik
+2025.01.28 14:30:44	Your Hobgoblin II has taken 56 Thermal damage from Damavik
+2025.01.28 14:30:45	You take 44 Thermal damage from Damavik
+2025.01.28 14:30:46	Shield Booster deactivated
+2025.01.28 14:30:47	You take 40 Thermal damage from Damavik
+2025.01.28 14:30:48	Your Hobgoblin II has taken 54 Thermal damage from Damavik
+2025.01.28 14:30:49	You take 43 Thermal damage from Damavik
+2025.01.28 14:30:50	Your Hobgoblin II has taken 50 Thermal damage from Damavik

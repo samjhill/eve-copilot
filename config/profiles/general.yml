@@ -1,0 +1,106 @@
+# EVE Copilot - General PVE Profile
+# Default profile for general PVE activities
+
+name: "General PVE"
+description: "Default profile for general PVE activities including missions, ratting, and exploration"
+
+rules:
+  # Drone management
+  recall_drones:
+    enabled: true
+    event_types: ["DRONE_HIT"]
+    conditions:
+      min_events: 2          # Trigger after 2 drone hits
+      min_damage: 50         # Minimum total damage
+    cooldown_ms: 8000        # 8 second cooldown
+    window_ms: 3000          # 3 second window
+    priority: 1              # Medium priority
+    voice_prompt: "Recall drones"
+    description: "Alert when drones take sustained damage"
+
+  # E-war alerts
+  you_scrammed:
+    enabled: true
+    event_types: ["YOU_SCRAMMED"]
+    cooldown_ms: 10000       # 10 second cooldown
+    priority: 0              # High priority (safety)
+    voice_prompt: "You are scrambled"
+    description: "Alert when you are warp scrambled"
+
+  you_webbed:
+    enabled: true
+    event_types: ["YOU_WEBBED"]
+    cooldown_ms: 8000        # 8 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "You are webbed"
+    description: "Alert when you are webbed"
+
+  you_neuted:
+    enabled: true
+    event_types: ["YOU_NEUTED"]
+    cooldown_ms: 8000        # 8 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "You are neuted"
+    description: "Alert when you are energy neutralized"
+
+  # Equipment management
+  reload_required:
+    enabled: true
+    event_types: ["RELOAD_REQUIRED"]
+    cooldown_ms: 5000        # 5 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "Reload now"
+    description: "Alert when modules need reloading"
+
+  charges_depleted:
+    enabled: true
+    event_types: ["CHARGES_DEPLETED"]
+    cooldown_ms: 5000        # 5 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "Charges depleted"
+    description: "Alert when module charges are depleted"
+
+  # Status monitoring
+  shield_low:
+    enabled: true
+    event_types: ["SHIELD_LOW"]
+    conditions:
+      shield_threshold: 50   # Alert when shield below 50%
+    cooldown_ms: 15000       # 15 second cooldown
+    priority: 0              # High priority (safety)
+    voice_prompt: "Shield low"
+    description: "Alert when shield level is critically low"
+
+  cap_low:
+    enabled: true
+    event_types: ["CAP_LOW"]
+    conditions:
+      cap_threshold: 20      # Alert when cap below 20%
+    cooldown_ms: 12000       # 12 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "Capacitor low"
+    description: "Alert when capacitor level is low"
+
+  # Combat alerts
+  incoming_damage_spike:
+    enabled: true
+    event_types: ["INCOMING_DAMAGE"]
+    conditions:
+      min_events: 3          # Trigger after 3 damage events
+      sustained_damage: 2000 # Over 2 second period
+    cooldown_ms: 10000       # 10 second cooldown
+    window_ms: 2000          # 2 second window
+    priority: 0              # High priority (safety)
+    voice_prompt: "Incoming damage spike"
+    description: "Alert when taking sustained damage"
+
+  # Module monitoring
+  module_overheat:
+    enabled: true
+    event_types: ["MODULE_ACTIVATED"]
+    conditions:
+      module_types: ["Afterburner", "Microwarpdrive", "Shield Booster"]
+    cooldown_ms: 6000        # 6 second cooldown
+    priority: 1              # Medium priority
+    voice_prompt: "Module active"
+    description: "Alert when key modules are activated"

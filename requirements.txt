@@ -1,0 +1,20 @@
+# Core dependencies
+watchdog>=3.0.0
+pyyaml>=6.0
+pyttsx3>=2.90
+pystray>=0.19.4
+pillow>=10.0.0
+
+# Enhanced TTS options
+gtts>=2.3.2
+edge-tts>=6.1.9
+pygame>=2.5.0
+
+# Cross-platform support
+psutil>=5.9.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0

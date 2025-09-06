@@ -1,0 +1,57 @@
+# EVE Copilot Configuration
+# Customize these settings for your EVE Online installation
+
+# EVE Online logs directory path
+# IMPORTANT: You must enable combat logging in EVE Online for low health alerts to work!
+# 
+# In EVE Online:
+# 1. Go to Settings → General → Combat Log
+# 2. Enable "Save combat log to file" 
+# 3. Set the log file path to a directory EVE Copilot can monitor
+# 4. Make sure "Log combat events" is enabled
+#
+# Windows: %USERPROFILE%\Documents\EVE\logs\Chatlogs
+# macOS: ~/Documents/EVE/logs/Gamelogs (game notifications only)
+# macOS Combat Logs: ~/Documents/EVE/logs/CombatLogs (if combat logging enabled)
+eve_logs_path: /Users/samhilll/Documents/EVE/logs/Gamelogs
+
+# Speech settings
+speech:
+  enabled: true
+  
+  # TTS Engine selection (in order of preference)
+  # Options: edge-tts (best quality, offline), gtts (high quality, online), pyttsx3 (basic, offline)
+  tts_engine: "edge-tts"
+  
+  # Voice settings for pyttsx3 (fallback engine)
+  voice: "Samantha"        # Voice to use (Samantha is clear and natural)
+  voice_rate: 150          # Words per minute (50-300)
+  voice_volume: 0.8        # Volume level (0.0-1.0)
+  
+  # Edge TTS settings (highest quality)
+  edge_voice: "en-US-AriaNeural"  # Neural voice (very natural)
+  edge_rate: "+0%"                 # Speed adjustment (-50% to +50%)
+  edge_volume: "+0%"               # Volume adjustment (-50% to +50%)
+  
+  # Google TTS settings
+  gtts_language: "en"              # Language code (en, es, fr, de, etc.)
+  gtts_slow: false                 # Slower speech for clarity
+  
+  priority_chime: true     # Play chime for priority alerts
+
+# Profile settings
+profiles:
+  default: abyssal          # Default profile to use
+  available:                # Available profiles
+    - general
+    - abyssal
+
+# Logging configuration
+logging:
+  level: INFO              # DEBUG, INFO, WARNING, ERROR
+  file: eve_copilot.log    # Log file name
+
+# Performance settings
+performance:
+  file_watch_interval: 0.1  # File watch interval in seconds
+  max_events_per_second: 100 # Maximum events to process per second

@@ -1,0 +1,245 @@
+# EVE Copilot - Abyssal Running Profile
+# Optimized for Abyssal pocket running scenarios
+
+name: "Abyssal Running"
+description: "Specialized profile for Abyssal pocket running with aggressive damage monitoring and rapid response alerts"
+
+rules:
+  # High-priority damage alerts for Abyssals
+  pulse_shield_booster:
+    enabled: true
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 3          # Trigger after 3 damage events
+      sustained_damage: 2000 # Over 2 second period
+    cooldown_ms: 6000        # 6 second cooldown (faster than general)
+    window_ms: 2000          # 2 second window
+    priority: 0              # Highest priority (safety)
+    voice_prompt: "Pulse shield booster"
+    description: "Immediate alert for sustained incoming damage in Abyssals"
+
+  # Rapid drone recall for Abyssal scenarios
+  recall_drones_abyssal:
+    enabled: true
+    event_types: ["DroneHit"]
+    conditions:
+      min_events: 1          # Trigger after just 1 drone hit (more aggressive)
+      min_damage: 30         # Lower damage threshold
+    cooldown_ms: 5000        # 5 second cooldown (faster than general)
+    window_ms: 2000          # 2 second window
+    priority: 1              # Medium priority
+    voice_prompt: "Recall drones"
+    description: "Quick drone recall for Abyssal pocket scenarios"
+
+  # E-war alerts (same as general but faster response)
+  you_scrammed_abyssal:
+    enabled: true
+    event_types: ["YouScrammed"]
+    cooldown_ms: 8000        # 8 second cooldown (faster than general)
+    priority: 0              # High priority (safety)
+    voice_prompt: "You are scrambled"
+    description: "Warp scramble alert for Abyssal scenarios"
+
+  you_webbed_abyssal:
+    enabled: true
+    event_types: ["YouWebbed"]
+    cooldown_ms: 6000        # 6 second cooldown (faster than general)
+    priority: 1              # Medium priority
+    voice_prompt: "You are webbed"
+    description: "Web alert for Abyssal scenarios"
+
+  # Capacitor management (critical for Abyssals)
+  cap_neutralized_abyssal:
+    enabled: true
+    event_types: ["YouNeuted"]
+    cooldown_ms: 5000        # 5 second cooldown (faster than general)
+    priority: 0              # High priority (safety)
+    voice_prompt: "Capacitor neutralized"
+    description: "Critical alert for capacitor neutralization in Abyssals"
+
+  cap_low_abyssal:
+    enabled: true
+    event_types: ["CapLow"]
+    conditions:
+      cap_threshold: 25      # Alert when cap below 25% (higher than general)
+    cooldown_ms: 8000        # 8 second cooldown (faster than general)
+    priority: 0              # High priority (safety)
+    voice_prompt: "Capacitor low"
+    description: "Early capacitor warning for Abyssal scenarios"
+
+  # Shield management
+  shield_low_abyssal:
+    enabled: true
+    event_types: ["ShieldLow"]
+    conditions:
+      shield_threshold: 50   # Alert when shield below 50%
+    cooldown_ms: 10000       # 10 second cooldown (faster than general)
+    priority: 0              # High priority (safety)
+    voice_prompt: "Shield low"
+    description: "Early shield warning for Abyssal scenarios"
+
+  # Equipment management
+  reload_required_abyssal:
+    enabled: true
+    event_types: ["ReloadRequired"]
+    cooldown_ms: 3000        # 3 second cooldown (faster than general)
+    priority: 1              # Medium priority
+    voice_prompt: "Reload now"
+    description: "Quick reload alert for Abyssal scenarios"
+
+  # Special Abyssal-specific alerts
+  entering_abyss_greeting:
+    enabled: true
+    event_types: ["SpatialPhenomena"]
+    cooldown_ms: 10000        # prevent repeats on multiple similar lines
+    priority: 2               # informational
+    voice_prompt: "entering abyss, good hunting!"
+    description: "Greet when local spatial phenomena (Abyssal effect) is detected"
+
+  abyssal_wave_complete:
+    enabled: true
+    event_types: ["ModuleDeactivated"]
+    conditions:
+      module_types: ["Shield Booster", "Armor Repairer"]
+    cooldown_ms: 4000        # 4 second cooldown
+    priority: 2              # Low priority (info)
+    voice_prompt: "Wave complete"
+    description: "Alert when defensive modules deactivate (wave complete)"
+
+  # NEW: Cargo collection phase
+  cargo_collection_abyssal:
+    enabled: true
+    event_types: ["CargoApproach"]
+    cooldown_ms: 8000        # 8 second cooldown
+    priority: 2              # Low priority (informational)
+    voice_prompt: "Collecting loot"
+    description: "Alert when ship automatically approaches cargo for collection"
+
+  # Overheat monitoring for Abyssal scenarios
+  module_overheat_abyssal:
+    enabled: true
+    event_types: ["ModuleActivated"]
+    conditions:
+      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
+    cooldown_ms: 4000        # 4 second cooldown (faster than general)
+    priority: 1              # Medium priority
+    voice_prompt: "Module active"
+    description: "Monitor key defensive modules in Abyssal scenarios"
+
+  # Damage spike detection (more sensitive for Abyssals)
+  damage_spike_abyssal:
+    enabled: true
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 1          # Trigger after 1 damage event (aggressive)
+      sustained_damage: 300  # Very low threshold for testing
+    cooldown_ms: 2000        # 2 second cooldown
+    window_ms: 800           # 0.8 second window (very fast detection)
+    priority: 0              # High priority (safety)
+    voice_prompt: "Damage spike"
+    description: "Sensitive damage spike detection for Abyssal scenarios"
+
+  # Room cleared detection (when defensive modules deactivate after wave completion)
+  room_cleared_abyssal:
+    enabled: true
+    event_types: ["ModuleDeactivated"]
+    conditions:
+      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
+    cooldown_ms: 5000        # 5 second cooldown
+    priority: 2              # Low priority (informational)
+    voice_prompt: "Room cleared"
+    description: "Alert when defensive modules deactivate after clearing a room"
+
+  # Drone recall reminder when room is cleared
+  drone_recall_reminder_abyssal:
+    enabled: true
+    event_types: ["ModuleDeactivated"]
+    conditions:
+      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
+    cooldown_ms: 8000        # 8 second cooldown (after room cleared)
+    priority: 1              # Medium priority (tactical)
+    voice_prompt: "Recall drones - room cleared"
+    description: "Reminder to recall drones when room is cleared"
+
+  # Reload reminder when room is cleared
+  reload_reminder_abyssal:
+    enabled: true
+    event_types: ["ModuleDeactivated"]
+    conditions:
+      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
+    cooldown_ms: 10000       # 10 second cooldown (after room cleared)
+    priority: 1              # Medium priority (tactical)
+    voice_prompt: "Reload weapons - room cleared"
+    description: "Reminder to reload weapons when room is cleared"
+
+  # Time warning for 10-minute mark (critical timing)
+  time_warning_abyssal:
+    enabled: false
+    event_types: ["SpatialPhenomena"]
+    conditions:
+      effect: "spatial_phenomena"
+    cooldown_ms: 30000       # 30 second cooldown (only once per run)
+    priority: 1              # Medium priority (time management)
+    voice_prompt: "10 minutes elapsed - check your timer"
+    description: "Warning at 10-minute mark in abyssal run"
+
+  # 10-minute timer alert (based on time since abyss entry)
+  timer_10min_abyssal:
+    enabled: false
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 1          # Trigger on any damage event
+      time_since_abyss: 600  # 10 minutes = 600 seconds
+    cooldown_ms: 60000       # 1 minute cooldown (only once)
+    priority: 1              # Medium priority (time management)
+    voice_prompt: "10 minutes elapsed - check your timer"
+    description: "Alert when 10 minutes have passed since entering abyss"
+
+  # Recent abyss entry detection (for timing)
+  recent_abyss_entry:
+    enabled: true
+    event_types: ["SpatialPhenomena"]
+    conditions:
+      effect: "spatial_phenomena"
+    cooldown_ms: 1000        # 1 second cooldown
+    priority: 3              # Low priority (just for tracking)
+    voice_prompt: "entering abyss, good hunting!"
+    description: "Detect recent abyss entry for timing purposes"
+
+  # Simple 10-minute timer (triggers on any recent damage after 10 minutes)
+  simple_10min_timer:
+    enabled: true
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 1          # Any damage event
+      time_since_abyss: 600  # 10 minutes = 600 seconds
+    cooldown_ms: 300000      # 5 minute cooldown (only once per run)
+    priority: 1              # Medium priority (time management)
+    voice_prompt: "10 minutes elapsed - check your timer"
+    description: "Simple 10-minute timer based on recent abyss entry"
+
+  # Combat detection (only trigger target recommendations during real combat)
+  combat_detection_abyssal:
+    enabled: true
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 1          # Any damage event
+      sustained_damage: 100  # Moderate damage threshold
+    cooldown_ms: 5000        # 5 second cooldown
+    window_ms: 2000          # 2 second analysis window
+    priority: 3              # Low priority (just for detection)
+    voice_prompt: "Combat detected"
+    description: "Detect when combat is happening"
+
+  # Target recommendation system (prioritize most dangerous enemies)
+  target_recommendation_abyssal:
+    enabled: true
+    event_types: ["IncomingDamage"]
+    conditions:
+      min_events: 1          # Trigger after 1 damage event (immediate response)
+      sustained_damage: 50   # Very low threshold for immediate detection
+    cooldown_ms: 5000        # 5 second cooldown (very responsive)
+    window_ms: 1000          # 1 second analysis window (immediate)
+    priority: 1              # Medium priority (tactical)
+    voice_prompt: "Recommended target: {target_name}"
+    description: "Recommend the most dangerous enemy to target based on damage output and threat level"
