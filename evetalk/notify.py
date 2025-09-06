@@ -551,6 +551,16 @@ class SpeechNotifier:
         if self.enabled:
             self.speech_queue.start()
     
+    def is_enabled(self) -> bool:
+        """Check if speech is enabled.
+        
+        Returns:
+            True if speech is enabled and TTS engines are available
+        """
+        result = self.enabled and self.active_engine is not None
+        logger.info(f"Speech enabled check: enabled={self.enabled}, active_engine={self.active_engine is not None}, result={result}")
+        return result
+    
     def _init_tts_engines(self):
         """Initialize available TTS engines in order of preference."""
         # Try to initialize engines in order of quality

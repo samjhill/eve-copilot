@@ -4,6 +4,7 @@ EVE Copilot Web Dashboard
 Modern web-based interface for monitoring and controlling EVE Copilot
 """
 
+import asyncio
 import json
 import logging
 import threading
@@ -40,7 +41,8 @@ class WebDashboard:
         self.log_watcher = log_watcher
         self.app = Flask(__name__)
         self.app.config['SECRET_KEY'] = 'eve_copilot_dashboard_secret_key'
-        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
+        self.app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
+        self.socketio = SocketIO(self.app, cors_allowed_origins="*", allow_unsafe_werkzeug=True)
         
         # Dashboard state
         self.start_time = datetime.now()
@@ -68,7 +70,11 @@ class WebDashboard:
         @self.app.route('/')
         def index():
             """Main dashboard page."""
-            return render_template('dashboard.html')
+            try:
+                return render_template('dashboard.html')
+            except Exception as e:
+                logger.error(f"Error rendering dashboard: {e}")
+                return f"<h1>EVE Copilot Dashboard</h1><p>Error loading dashboard: {e}</p>", 500
         
         @self.app.route('/api/status')
         def api_status():
@@ -85,6 +91,11 @@ class WebDashboard:
         def api_metrics():
             """Get performance metrics."""
             return jsonify(self.performance_metrics)
+        
+        @self.app.route('/test')
+        def test():
+            """Test route to verify Flask is working."""
+            return jsonify({'status': 'ok', 'message': 'Flask is working'})
         
         @self.app.route('/api/config')
         def api_config():
@@ -109,23 +120,51 @@ class WebDashboard:
                 action = data.get('action')
                 
                 if action == 'start_watching':
-                    self.log_watcher.start()
-                    return jsonify({'success': True, 'message': 'Started watching logs'})
+                    if self.log_watcher and hasattr(self.log_watcher, 'start'):
+                        if asyncio.iscoroutinefunction(self.log_watcher.start):
+                            # Run async method in new event loop
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            loop.run_until_complete(self.log_watcher.start())
+                            loop.close()
+                        else:
+                            self.log_watcher.start()
+                        return jsonify({'success': True, 'message': 'Started watching logs'})
+                    else:
+                        return jsonify({'success': False, 'message': 'Log watcher not available'}), 400
+                        
                 elif action == 'stop_watching':
-                    self.log_watcher.stop()
-                    return jsonify({'success': True, 'message': 'Stopped watching logs'})
+                    if self.log_watcher and hasattr(self.log_watcher, 'stop'):
+                        if asyncio.iscoroutinefunction(self.log_watcher.stop):
+                            # Run async method in new event loop
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            loop.run_until_complete(self.log_watcher.stop())
+                            loop.close()
+                        else:
+                            self.log_watcher.stop()
+                        return jsonify({'success': True, 'message': 'Stopped watching logs'})
+                    else:
+                        return jsonify({'success': False, 'message': 'Log watcher not available'}), 400
+                        
                 elif action == 'reload_config':
                     self.config.reload()
-                    self.rules_engine.reload_config()
+                    if self.rules_engine and hasattr(self.rules_engine, 'reload_config'):
+                        self.rules_engine.reload_config()
                     return jsonify({'success': True, 'message': 'Configuration reloaded'})
+                    
                 elif action == 'test_speech':
-                    if hasattr(self.rules_engine, 'speech_notifier'):
+                    if self.rules_engine and hasattr(self.rules_engine, 'speech_notifier'):
                         self.rules_engine.speech_notifier.speak("EVE Copilot dashboard test", priority=2)
-                    return jsonify({'success': True, 'message': 'Speech test sent'})
+                        return jsonify({'success': True, 'message': 'Speech test sent'})
+                    else:
+                        return jsonify({'success': False, 'message': 'Speech notifier not available'}), 400
+                        
                 else:
                     return jsonify({'success': False, 'message': 'Unknown action'}), 400
                     
             except Exception as e:
+                logger.error(f"Error in control API: {e}")
                 return jsonify({'success': False, 'message': str(e)}), 500
     
     def _setup_socket_events(self):
@@ -177,13 +216,29 @@ class WebDashboard:
         try:
             # Get watcher status
             watcher_status = {}
-            if hasattr(self.log_watcher, 'get_status'):
+            if self.log_watcher and hasattr(self.log_watcher, 'get_status'):
                 watcher_status = self.log_watcher.get_status()
+            else:
+                watcher_status = {
+                    'watching': False,
+                    'files_monitored': 0,
+                    'events_processed': 0,
+                    'current_file': 'Not Available (Web-only mode)'
+                }
             
             # Get engine status
             engine_status = {}
-            if hasattr(self.rules_engine, 'get_status'):
+            if self.rules_engine and hasattr(self.rules_engine, 'get_status'):
                 engine_status = self.rules_engine.get_status()
+                logger.info(f"Web dashboard: rules_engine exists, got status: {engine_status}")
+            else:
+                logger.info(f"Web dashboard: rules_engine is None or no get_status method. rules_engine={self.rules_engine}")
+                engine_status = {
+                    'active_profile': 'Not Available (Web-only mode)',
+                    'rules_count': 0,
+                    'rules_triggered': 0,
+                    'speech_enabled': False
+                }
             
             # Calculate uptime
             uptime = datetime.now() - self.start_time
@@ -220,12 +275,12 @@ class WebDashboard:
             self.performance_metrics['cpu_usage'] = process.cpu_percent()
             
             # Update other metrics from components
-            if hasattr(self.rules_engine, 'get_status'):
+            if self.rules_engine and hasattr(self.rules_engine, 'get_status'):
                 engine_status = self.rules_engine.get_status()
                 self.performance_metrics['rules_triggered'] = engine_status.get('rules_triggered', 0)
                 self.performance_metrics['alerts_sent'] = engine_status.get('alerts_sent', 0)
             
-            if hasattr(self.log_watcher, 'get_status'):
+            if self.log_watcher and hasattr(self.log_watcher, 'get_status'):
                 watcher_status = self.log_watcher.get_status()
                 self.performance_metrics['events_processed'] = watcher_status.get('events_processed', 0)
                 
@@ -287,7 +342,7 @@ class WebDashboard:
         # Emit real-time alert
         self.socketio.emit('new_alert', alert)
     
-    def run(self, host: str = '127.0.0.1', port: int = 5000, debug: bool = False):
+    def run(self, host: str = '0.0.0.0', port: int = 8080, debug: bool = False):
         """Run the web dashboard."""
         try:
             logger.info(f"Starting web dashboard on http://{host}:{port}")

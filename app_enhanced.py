@@ -65,7 +65,7 @@ class EnhancedEveCopilot:
             logger.info("Initializing enhanced EVE Copilot...")
             
             # Initialize parser
-            self.parser = LogParser(self.config.patterns_file)
+            self.parser = LogParser("config/patterns/core.yml")
             logger.info("Log parser initialized")
             
             # Initialize speech notifier
@@ -161,7 +161,7 @@ class EnhancedEveCopilot:
                 logger.info("Web dashboard started")
             
             logger.info("Enhanced EVE Copilot started successfully")
-            logger.info("Web dashboard available at: http://127.0.0.1:5000")
+            logger.info("Web dashboard available at: http://127.0.0.1:8080")
             
         except Exception as e:
             self.error_handler.handle_error(
@@ -175,7 +175,7 @@ class EnhancedEveCopilot:
     def _run_dashboard(self):
         """Run the web dashboard in a separate thread."""
         try:
-            self.web_dashboard.run(host='127.0.0.1', port=5000, debug=False)
+            self.web_dashboard.run(host='0.0.0.0', port=8080, debug=False)
         except Exception as e:
             self.error_handler.handle_error(
                 e,
@@ -330,7 +330,7 @@ Examples:
             logger.info("Running in web-only mode")
             create_dashboard_templates()
             dashboard = WebDashboard(app.config, None, None)
-            dashboard.run(host='127.0.0.1', port=5000, debug=args.debug)
+            dashboard.run(host='0.0.0.0', port=8080, debug=args.debug)
         else:
             # Full application mode
             await app.initialize()

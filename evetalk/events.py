@@ -36,6 +36,7 @@ class EventType(Enum):
     SPATIAL_PHENOMENA = "SpatialPhenomena"
     WAVE_TRANSITION = "WaveTransition"
     CARGO_APPROACH = "CargoApproach"
+    ABYSS_ENTRY = "AbyssEntry"
     
     # Navigation events
     WARP_START = "WarpStart"

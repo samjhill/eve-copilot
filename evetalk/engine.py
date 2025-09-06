@@ -608,9 +608,10 @@ class RulesEngine:
         }
         
         # Check for priority keywords in target name (case insensitive)
-        for keyword, priority_name in priority_keywords.items():
+        for keyword, priority_suffix in priority_keywords.items():
             if keyword.lower() in target_name.lower():
-                return priority_name
+                # Preserve the full original name and add priority suffix
+                return f"{target_name} ({priority_suffix.split('(')[1].rstrip(')')})"
         
         # Default to original name if no priority match
         return target_name
@@ -644,6 +645,13 @@ class RulesEngine:
         Returns:
             Dictionary with engine status
         """
+        speech_enabled = False
+        if self.speech_notifier:
+            speech_enabled = self.speech_notifier.is_enabled()
+            logger.info(f"Rules engine status: speech_notifier exists, speech_enabled={speech_enabled}")
+        else:
+            logger.info("Rules engine status: speech_notifier is None")
+        
         return {
             'active_profile': self.active_profile,
             'available_profiles': list(self.profiles.keys()),
@@ -651,7 +659,8 @@ class RulesEngine:
             'enabled_rules': len([r for r in self.rules if r.enabled]),
             'events_processed': self.events_processed,
             'rules_triggered': self.rules_triggered,
-            'performance_throttled': self._should_throttle_events(time.time())
+            'performance_throttled': self._should_throttle_events(time.time()),
+            'speech_enabled': speech_enabled
         }
     
     def get_rule_status(self) -> List[Dict[str, Any]]:

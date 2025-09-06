@@ -89,12 +89,21 @@ rules:
 
   # Special Abyssal-specific alerts
   entering_abyss_greeting:
-    enabled: true
+    enabled: false            # Disabled - too broad, triggers on any spatial phenomena
     event_types: ["SpatialPhenomena"]
     cooldown_ms: 10000        # prevent repeats on multiple similar lines
     priority: 2               # informational
     voice_prompt: "entering abyss, good hunting!"
     description: "Greet when local spatial phenomena (Abyssal effect) is detected"
+
+  # NEW: Specific abyss entry detection
+  abyss_entry_greeting:
+    enabled: true
+    event_types: ["AbyssEntry"]
+    cooldown_ms: 30000        # 30 second cooldown (only once per entry)
+    priority: 2               # informational
+    voice_prompt: "entering abyss, good hunting!"
+    description: "Greet when actually entering an Abyssal Deadspace pocket"
 
   abyssal_wave_complete:
     enabled: true
@@ -197,7 +206,7 @@ rules:
 
   # Recent abyss entry detection (for timing)
   recent_abyss_entry:
-    enabled: true
+    enabled: false            # Disabled - too broad, triggers on any spatial phenomena
     event_types: ["SpatialPhenomena"]
     conditions:
       effect: "spatial_phenomena"

@@ -211,6 +211,8 @@ class LogParser:
                 return self._create_spatial_phenomena_event(timestamp, raw_line, source_file)
             elif event_type == "WAVE_TRANSITION_WAIT":
                 return self._create_wave_transition_wait_event(timestamp, raw_line, source_file)
+            elif event_type == "ABYSS_ENTRY":
+                return self._create_abyss_entry_event(timestamp, raw_line, source_file)
             elif event_type == "INCOMING_DAMAGE":
                 return self._create_incoming_damage_event(groups, timestamp, raw_line, source_file)
             elif event_type == "OUTGOING_DAMAGE":
@@ -262,6 +264,18 @@ class LogParser:
             timestamp=timestamp,
             subject="Abyssal Effect",
             meta={"effect": "spatial_phenomena"},
+            raw_line=raw_line,
+            source_file=source_file
+        )
+
+    def _create_abyss_entry_event(self, timestamp: datetime, raw_line: str, 
+                                source_file: Optional[str]) -> GameEvent:
+        """Create abyss entry event."""
+        return GameEvent(
+            type=EventType.ABYSS_ENTRY,
+            timestamp=timestamp,
+            subject="Abyssal Deadspace",
+            meta={"effect": "abyss_entry"},
             raw_line=raw_line,
             source_file=source_file
         )

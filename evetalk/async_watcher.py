@@ -50,8 +50,9 @@ class AsyncLogWatcher:
         self.batch_timeout = 0.1  # 100ms
         
         # Performance limits
-        self.max_events_per_second = config.performance.get('max_events_per_second', 100)
-        self.file_check_interval = config.performance.get('file_watch_interval', 0.1)
+        performance_config = config.get_performance_config()
+        self.max_events_per_second = performance_config.get('max_events_per_second', 100)
+        self.file_check_interval = performance_config.get('file_watch_interval', 0.1)
         
         # Background tasks
         self.tasks: Set[asyncio.Task] = set()
@@ -133,7 +134,7 @@ class AsyncLogWatcher:
     async def _check_for_new_files(self):
         """Check for new log files to monitor."""
         try:
-            logs_path = Path(self.config.eve_logs_path)
+            logs_path = self.config.get_eve_logs_path()
             if not logs_path.exists():
                 return
             

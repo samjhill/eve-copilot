@@ -9,6 +9,13 @@ spatial_phenomena:
   groups: ["timestamp"]
   description: "Local spatial phenomena detected (Abyssal effect)"
 
+# Abyssal deadspace entry detection
+abyss_entry:
+  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+You\\s+have\\s+entered\\s+an\\s+Abyssal\\s+Deadspace"
+  event_type: "ABYSS_ENTRY"
+  groups: ["timestamp"]
+  description: "Entered an Abyssal Deadspace pocket"
+
 # NEW: Wave transition "Please wait..." message
 wave_transition_wait:
   regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(notify\\)\\s+Please\\s+wait\\.\\.\\."
