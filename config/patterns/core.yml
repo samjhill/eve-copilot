@@ -150,9 +150,3 @@ module_deactivated:
   groups: ["timestamp", "module"]
   description: "A module is deactivated"
 
-# Room cleared detection - enemies missing completely
-room_cleared_miss:
-  regex: "\\[\\s+(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+\\]\\s+\\(combat\\)\\s+([^\\s]+)\\s+misses\\s+you\\s+completely"
-  event_type: "ROOM_CLEARED_MISS"
-  groups: ["timestamp", "enemy_name"]
-  description: "Enemy misses completely (room cleared indicator)"

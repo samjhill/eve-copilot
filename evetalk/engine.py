@@ -1,10 +1,13 @@
 """
-Rules engine for EVE Copilot - processes events and triggers notifications
+Rules engine for EVE Copilot - processes events and triggers notifications.
+
+This module handles the core logic for processing EVE Online game events,
+evaluating rules, and triggering appropriate voice alerts based on
+Abyssal Deadspace combat scenarios.
 """
 
 import time
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 import logging
 import yaml
 from pathlib import Path
@@ -13,6 +16,22 @@ from .events import GameEvent, EventType
 from .notify import SpeechNotifier
 
 logger = logging.getLogger(__name__)
+
+# Constants for target recommendation system
+RECOMMENDATION_DEDUP_WINDOW = 300  # 5 minutes in seconds
+TARGET_ANALYSIS_WINDOW = 10  # 10 seconds for recent damage analysis
+EVENT_AGE_LIMIT = 1800  # 30 minutes in seconds (accounts for timezone differences)
+
+# Priority tiers for enemy targeting
+class EnemyPriority:
+    """Enemy priority tiers for targeting recommendations."""
+    EWAR = 1          # Electronic Warfare (highest priority)
+    REPAIR = 2        # Remote repair ships
+    HIGH_DPS = 3      # High damage dealers
+    MEDIUM = 4        # Medium threat ships
+    LARGE = 5         # Large ships (drifters)
+    LOW = 6           # Low priority enemies
+    OBJECTIVE = 7     # Mission objectives (lowest priority)
 
 
 class RuleError(Exception):
@@ -363,7 +382,7 @@ class RulesEngine:
         # Only process events from the last 30 minutes to avoid old log data
         # Note: EVE logs use GMT timezone, so we need a larger window
         event_age = current_time - event.timestamp.timestamp()
-        if event_age > 1800:  # 30 minutes = 1800 seconds (accounts for timezone differences)
+        if event_age > EVENT_AGE_LIMIT:
             logger.debug(f"Skipping old event: {event.type.value} from {event_age:.1f}s ago")
             return
         
@@ -456,17 +475,19 @@ class RulesEngine:
         
         return voice_prompt
     
-    def _get_recommended_target(self, rule: Rule, event: GameEvent) -> str:
+    def _get_recommended_target(self, rule: Rule, event: GameEvent) -> Optional[str]:
         """Get recommended target based on damage analysis.
+        
+        Analyzes recent incoming damage events to identify the most dangerous
+        enemy currently attacking the player, applying EVE Abyssal priority rules.
         
         Args:
             rule: Rule that was triggered
             event: Event that triggered the rule
             
         Returns:
-            Recommended target name
+            Recommended target name with priority indicator, or None if already recommended
         """
-        import time
         current_time = time.time()
         
         # Initialize recommended targets tracking if not exists
@@ -474,7 +495,7 @@ class RulesEngine:
             self._recommended_targets = {}
         
         # Clean old recommendations (older than 5 minutes)
-        cutoff_time = current_time - 300  # 5 minutes
+        cutoff_time = current_time - RECOMMENDATION_DEDUP_WINDOW
         self._recommended_targets = {k: v for k, v in self._recommended_targets.items() if v > cutoff_time}
         
         # Analyze damage from VERY recent events (last 10 seconds)
@@ -484,7 +505,7 @@ class RulesEngine:
         for event, timestamp in rule.event_history:
             # Only consider events from the last 10 seconds
             event_age = current_time - timestamp
-            if event_age > 10:  # 10 seconds = only very recent damage
+            if event_age > TARGET_ANALYSIS_WINDOW:
                 continue
                 
             if event.type.value == "IncomingDamage":
@@ -522,11 +543,14 @@ class RulesEngine:
     def _apply_abyssal_priority(self, target_name: str) -> str:
         """Apply EVE Abyssal enemy priority rules based on wiki recommendations.
         
-        Priority order:
+        Priority order (based on EVE Online Abyssal Deadspace wiki):
         1. Electronic Warfare (EWAR) - Neutralizers, webifiers, disruptors
         2. Remote repair ships - Ships that heal other enemies  
         3. High damage dealers - Ships that pose the most threat
-        4. Size-based priority - Smaller, faster ships often more dangerous
+        4. Medium threat ships - Standard combat ships
+        5. Large ships - Drifters and other large targets
+        6. Low priority - Other enemy types
+        7. Objectives - Cache and mission objectives
         
         Args:
             target_name: Original target name
@@ -534,7 +558,7 @@ class RulesEngine:
         Returns:
             Prioritized target name with priority indicator
         """
-        # EVE Abyssal enemy priority based on wiki recommendations
+        # EVE Abyssal enemy priority based on official wiki recommendations
         priority_keywords = {
             # TIER 1 - Electronic Warfare (HIGHEST PRIORITY)
             'Neutralizer': 'Neutralizer (EWAR)',

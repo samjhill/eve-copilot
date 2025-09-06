@@ -1,15 +1,17 @@
 """
-Speech notification system for EVE Copilot - Enhanced TTS with multiple engines
+Speech notification system for EVE Copilot - Enhanced TTS with multiple engines.
+
+This module provides text-to-speech functionality with support for multiple
+TTS engines (Google TTS, Edge TTS, pyttsx3) and includes a speech queue
+system for managing voice alerts with priority handling.
 """
 
 import queue
 import threading
 import time
-import os
 import tempfile
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 import logging
-import platform
 import asyncio
 from pathlib import Path
 from abc import ABC, abstractmethod

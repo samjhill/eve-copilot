@@ -1,5 +1,10 @@
 """
-Log file parser for EVE Copilot - parses EVE Online log files using regex patterns
+Log file parser for EVE Copilot - parses EVE Online log files using regex patterns.
+
+This module handles the parsing of EVE Online combat logs, converting raw log lines
+into structured GameEvent objects that can be processed by the rules engine.
+Supports various event types including damage, energy neutralization, spatial phenomena,
+and wave transitions.
 """
 
 import re
