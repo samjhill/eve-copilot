@@ -106,14 +106,16 @@ rules:
     description: "Greet when actually entering an Abyssal Deadspace pocket"
 
   abyssal_wave_complete:
-    enabled: true
-    event_types: ["ModuleDeactivated"]
+    enabled: false
+    event_types: ["IncomingDamage"]
     conditions:
-      module_types: ["Shield Booster", "Armor Repairer"]
-    cooldown_ms: 4000        # 4 second cooldown
-    priority: 2              # Low priority (info)
+      sustained_damage: 0     # No incoming damage for sustained period
+      min_events: 0           # No damage events in window
+    cooldown_ms: 30000        # 30 second cooldown (much longer)
+    window_ms: 15000          # 15 second window to detect sustained no damage
+    priority: 1              # Medium priority (tactical info)
     voice_prompt: "Wave complete"
-    description: "Alert when defensive modules deactivate (wave complete)"
+    description: "Alert when no incoming damage for sustained period (wave complete) - DISABLED due to false positives"
 
   # NEW: Cargo collection phase
   cargo_collection_abyssal:
@@ -148,38 +150,45 @@ rules:
     voice_prompt: "Damage spike"
     description: "Sensitive damage spike detection for Abyssal scenarios"
 
-  # Room cleared detection (when wave transition occurs)
+  # Room cleared detection (intelligent combat completion detection)
   room_cleared_abyssal:
     enabled: true
-    event_types: ["WaveTransitionWait"]
+    event_types: ["IncomingDamage"]
     conditions:
-      min_events: 1          # Any wave transition event
-    cooldown_ms: 10000       # 10 second cooldown
-    priority: 2              # Low priority (informational)
+      sustained_damage: 0     # No incoming damage for sustained period
+      min_events: 0           # No damage events in window
+      time_since_last_damage: 8  # 8 seconds since last damage
+    cooldown_ms: 20000        # 20 second cooldown (prevent spam)
+    window_ms: 10000          # 10 second window to detect sustained no damage
+    priority: 1              # Medium priority (tactical info)
     voice_prompt: "Room cleared"
-    description: "Alert when wave transition detected (room cleared)"
+    description: "Alert when no incoming damage for 8+ seconds (room cleared)"
 
   # Drone recall reminder when room is cleared
   drone_recall_reminder_abyssal:
     enabled: true
-    event_types: ["ModuleDeactivated"]
+    event_types: ["IncomingDamage"]
     conditions:
-      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
-    cooldown_ms: 8000        # 8 second cooldown (after room cleared)
+      sustained_damage: 0     # No incoming damage for sustained period
+      min_events: 0           # No damage events in window
+    cooldown_ms: 30000        # 30 second cooldown (after room cleared)
+    window_ms: 15000          # 15 second window to detect sustained no damage
     priority: 1              # Medium priority (tactical)
     voice_prompt: "Recall drones - room cleared"
-    description: "Reminder to recall drones when room is cleared"
+    description: "Reminder to recall drones when room is cleared (15+ seconds no damage)"
 
   # Reload reminder when room is cleared
   reload_reminder_abyssal:
     enabled: true
-    event_types: ["ModuleDeactivated"]
+    event_types: ["IncomingDamage"]
     conditions:
-      module_types: ["Shield Booster", "Armor Repairer", "Afterburner"]
-    cooldown_ms: 10000       # 10 second cooldown (after room cleared)
+      sustained_damage: 0     # No incoming damage for sustained period
+      min_events: 0           # No damage events in window
+    cooldown_ms: 35000        # 35 second cooldown (after room cleared)
+    window_ms: 18000          # 18 second window to detect sustained no damage
     priority: 1              # Medium priority (tactical)
     voice_prompt: "Reload weapons - room cleared"
-    description: "Reminder to reload weapons when room is cleared"
+    description: "Reminder to reload weapons when room is cleared (18+ seconds no damage)"
 
   # Time warning for 10-minute mark (critical timing)
   time_warning_abyssal:

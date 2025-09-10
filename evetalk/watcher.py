@@ -181,17 +181,19 @@ class EVELogHandler(FileSystemEventHandler):
     """Handles file system events for EVE log files."""
     
     def __init__(self, parser: LogParser, rules_engine: RulesEngine, 
-                 callback: Optional[Callable] = None):
+                 callback: Optional[Callable] = None, watcher: Optional['LogWatcher'] = None):
         """Initialize the log handler.
         
         Args:
             parser: Log parser instance
             rules_engine: Rules engine instance
             callback: Optional callback function for events
+            watcher: Optional LogWatcher instance to update events counter
         """
         self.parser = parser
         self.rules_engine = rules_engine
         self.callback = callback
+        self.watcher = watcher
         self.last_processed_positions: Dict[str, int] = {}
         self.processed_files: set[str] = set()
         
@@ -242,8 +244,10 @@ class EVELogHandler(FileSystemEventHandler):
             # Update position
             self.last_processed_positions[file_path] = current_size
             
-            if events_processed > 0:
-                logger.debug(f"Processed {events_processed} events from {file_path}")
+            # Update watcher's events counter
+            if self.watcher and events_processed > 0:
+                self.watcher.events_processed += events_processed
+                logger.debug(f"Processed {events_processed} events from {file_path} (total: {self.watcher.events_processed})")
             
         except Exception as e:
             logger.error(f"Error processing file {file_path}: {e}")
@@ -371,7 +375,7 @@ class LogWatcher:
         self.parser = self._init_parser()
         
         # Initialize handler
-        self.handler = EVELogHandler(self.parser, self.rules_engine)
+        self.handler = EVELogHandler(self.parser, self.rules_engine, watcher=self)
         
         # Performance tracking
         self.events_processed = 0
