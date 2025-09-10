@@ -8,7 +8,7 @@ rules:
   # Drone management
   recall_drones:
     enabled: true
-    event_types: ["DRONE_HIT"]
+    event_types: ["DroneHit"]
     conditions:
       min_events: 2          # Trigger after 2 drone hits
       min_damage: 50         # Minimum total damage
@@ -21,7 +21,7 @@ rules:
   # E-war alerts
   you_scrammed:
     enabled: true
-    event_types: ["YOU_SCRAMMED"]
+    event_types: ["WarpScramble"]
     cooldown_ms: 10000       # 10 second cooldown
     priority: 0              # High priority (safety)
     voice_prompt: "You are scrambled"
@@ -29,7 +29,7 @@ rules:
 
   you_webbed:
     enabled: true
-    event_types: ["YOU_WEBBED"]
+    event_types: ["WebEffect"]
     cooldown_ms: 8000        # 8 second cooldown
     priority: 1              # Medium priority
     voice_prompt: "You are webbed"
@@ -37,7 +37,7 @@ rules:
 
   you_neuted:
     enabled: true
-    event_types: ["YOU_NEUTED"]
+    event_types: ["EnergyNeutralization"]
     cooldown_ms: 8000        # 8 second cooldown
     priority: 1              # Medium priority
     voice_prompt: "You are neuted"
@@ -46,7 +46,7 @@ rules:
   # Equipment management
   reload_required:
     enabled: true
-    event_types: ["RELOAD_REQUIRED"]
+    event_types: ["ReloadRequired"]
     cooldown_ms: 5000        # 5 second cooldown
     priority: 1              # Medium priority
     voice_prompt: "Reload now"
@@ -54,7 +54,7 @@ rules:
 
   charges_depleted:
     enabled: true
-    event_types: ["CHARGES_DEPLETED"]
+    event_types: ["ChargesDepleted"]
     cooldown_ms: 5000        # 5 second cooldown
     priority: 1              # Medium priority
     voice_prompt: "Charges depleted"
@@ -63,7 +63,7 @@ rules:
   # Status monitoring
   shield_low:
     enabled: true
-    event_types: ["SHIELD_LOW"]
+    event_types: ["ShieldStatus"]
     conditions:
       shield_threshold: 50   # Alert when shield below 50%
     cooldown_ms: 15000       # 15 second cooldown
@@ -73,7 +73,7 @@ rules:
 
   cap_low:
     enabled: true
-    event_types: ["CAP_LOW"]
+    event_types: ["CapacitorStatus"]
     conditions:
       cap_threshold: 20      # Alert when cap below 20%
     cooldown_ms: 12000       # 12 second cooldown
@@ -84,7 +84,7 @@ rules:
   # Combat alerts
   incoming_damage_spike:
     enabled: true
-    event_types: ["INCOMING_DAMAGE"]
+    event_types: ["IncomingDamage"]
     conditions:
       min_events: 3          # Trigger after 3 damage events
       sustained_damage: 2000 # Over 2 second period
@@ -97,7 +97,7 @@ rules:
   # Module monitoring
   module_overheat:
     enabled: true
-    event_types: ["MODULE_ACTIVATED"]
+    event_types: ["ModuleActivation"]
     conditions:
       module_types: ["Afterburner", "Microwarpdrive", "Shield Booster"]
     cooldown_ms: 6000        # 6 second cooldown

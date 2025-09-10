@@ -25,8 +25,11 @@ class EventType(Enum):
     
     # Equipment events
     MODULE_ACTIVATION = "ModuleActivation"
+    MODULE_ACTIVATED = "ModuleActivated"
+    MODULE_DEACTIVATED = "ModuleDeactivated"
     RELOAD_REQUIRED = "ReloadRequired"
     CHARGES_DEPLETED = "ChargesDepleted"
+    MISSILE_RELOAD_COMPLETE = "MissileReloadComplete"
     
     # Status events
     SHIELD_STATUS = "ShieldStatus"
@@ -37,6 +40,10 @@ class EventType(Enum):
     WAVE_TRANSITION = "WaveTransition"
     CARGO_APPROACH = "CargoApproach"
     ABYSS_ENTRY = "AbyssEntry"
+    
+    # Boss events
+    KARYBDIS_TYRANNOS_DETECTED = "KarybdisTyrannosDetected"
+    KARYBDIS_TYRANNOS_OUTGOING = "KarybdisTyrannosOutgoing"
     
     # Navigation events
     WARP_START = "WarpStart"
@@ -77,8 +84,6 @@ class EventType(Enum):
     YOU_NEUTED = "YouNeuted"
     SHIELD_LOW = "ShieldLow"
     CAP_LOW = "CapLow"
-    MODULE_ACTIVATED = "ModuleActivated"
-    MODULE_DEACTIVATED = "ModuleDeactivated"
     MODULE_LOADING = "ModuleLoading"
     WAVE_TRANSITION_WAIT = "WaveTransitionWait"
 

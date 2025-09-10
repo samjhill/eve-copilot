@@ -57,6 +57,10 @@ class WebDashboard:
             'cpu_usage': 0.0
         }
         
+        # Connect rules engine to dashboard alerts
+        if self.rules_engine:
+            self.rules_engine.alert_callback = self.add_alert
+        
         # Setup routes and socket events
         self._setup_routes()
         self._setup_socket_events()
@@ -156,9 +160,23 @@ class WebDashboard:
                 elif action == 'test_speech':
                     if self.rules_engine and hasattr(self.rules_engine, 'speech_notifier'):
                         self.rules_engine.speech_notifier.speak("EVE Copilot dashboard test", priority=2)
+                        # Also add an alert to the dashboard
+                        logger.info("Adding test alert to dashboard")
+                        self.add_alert("test_speech", "EVE Copilot dashboard test", 2)
+                        logger.info(f"Alert added. Total alerts: {len(self.alert_history)}")
                         return jsonify({'success': True, 'message': 'Speech test sent'})
                     else:
                         return jsonify({'success': False, 'message': 'Speech notifier not available'}), 400
+                        
+                elif action == 'force_detect_log':
+                    if self.log_watcher and hasattr(self.log_watcher, 'force_detect_active_file'):
+                        active_file = self.log_watcher.force_detect_active_file()
+                        if active_file:
+                            return jsonify({'success': True, 'message': f'Detected active log file: {active_file}'})
+                        else:
+                            return jsonify({'success': False, 'message': 'No active log file found'})
+                    else:
+                        return jsonify({'success': False, 'message': 'Log watcher not available'}), 400
                         
                 else:
                     return jsonify({'success': False, 'message': 'Unknown action'}), 400
@@ -557,6 +575,7 @@ def create_dashboard_templates():
             <button class="btn danger" onclick="stopWatching()">Stop Watching</button>
             <button class="btn warning" onclick="reloadConfig()">Reload Config</button>
             <button class="btn" onclick="testSpeech()">Test Speech</button>
+            <button class="btn" onclick="forceDetectLog()">Force Detect Log</button>
         </div>
         
         <div class="status-grid">
@@ -863,6 +882,24 @@ def create_dashboard_templates():
             });
         }
         
+        function forceDetectLog() {
+            fetch('/api/control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: 'force_detect_log'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Log detection: ' + data.message);
+                    // Refresh status to show new current file
+                    setTimeout(updateStatus, 1000);
+                } else {
+                    alert('Log detection failed: ' + data.message);
+                }
+            });
+        }
+        
         // Auto-refresh every 5 seconds
         setInterval(loadStatus, 5000);
     </script>
@@ -890,11 +927,25 @@ if __name__ == '__main__':
     create_dashboard_templates()
     
     # Load configuration
-    config = Config()
+    config = Config('config/app.yml')
     
-    # Initialize components (minimal for testing)
-    rules_engine = None
-    log_watcher = None
+    # Initialize components
+    from evetalk.engine import RulesEngine
+    from evetalk.watcher import LogWatcher
+    from evetalk.parse import LogParser
+    from evetalk.notify import SpeechNotifier
+    
+    # Create log parser
+    log_parser = LogParser("config/patterns/core.yml")
+    
+    # Create speech notifier
+    speech_notifier = SpeechNotifier(config)
+    
+    # Create rules engine
+    rules_engine = RulesEngine(config, speech_notifier)
+    
+    # Create log watcher
+    log_watcher = LogWatcher(config, rules_engine)
     
     # Create and run dashboard
     dashboard = WebDashboard(config, rules_engine, log_watcher)

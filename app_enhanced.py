@@ -95,6 +95,11 @@ class EnhancedEveCopilot:
             )
             logger.info("Web dashboard initialized")
             
+            # Connect rules engine to dashboard alerts
+            if self.rules_engine and self.web_dashboard:
+                self.rules_engine.alert_callback = self.web_dashboard.add_alert
+                logger.info("Alert callback connected to web dashboard")
+            
             logger.info("All components initialized successfully")
             
         except Exception as e:
@@ -114,18 +119,8 @@ class EnhancedEveCopilot:
                 
                 # Process event through rules engine
                 if self.rules_engine:
-                    triggered = self.rules_engine.process_event(event)
-                    if triggered:
-                        self.rules_triggered += 1
-                        self.alerts_sent += 1
-                        
-                        # Add alert to dashboard
-                        if self.web_dashboard:
-                            self.web_dashboard.add_alert(
-                                event.type.value,
-                                f"Event: {event.subject}",
-                                event.priority
-                            )
+                    self.rules_engine.process_event(event)
+                    # Alerts will be automatically sent to dashboard via alert_callback
                 
         except Exception as e:
             self.error_handler.handle_error(

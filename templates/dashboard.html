@@ -191,6 +191,7 @@
             <button class="btn danger" onclick="stopWatching()">Stop Watching</button>
             <button class="btn warning" onclick="reloadConfig()">Reload Config</button>
             <button class="btn" onclick="testSpeech()">Test Speech</button>
+            <button class="btn" onclick="forceDetectLog()">Force Detect Log</button>
         </div>
         
         <div class="status-grid">
@@ -493,6 +494,24 @@
                     alert('Speech test sent');
                 } else {
                     alert('Error: ' + data.message);
+                }
+            });
+        }
+        
+        function forceDetectLog() {
+            fetch('/api/control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: 'force_detect_log'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Log detection: ' + data.message);
+                    // Refresh status to show new current file
+                    setTimeout(updateStatus, 1000);
+                } else {
+                    alert('Log detection failed: ' + data.message);
                 }
             });
         }

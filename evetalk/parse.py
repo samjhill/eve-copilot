@@ -235,6 +235,23 @@ class LogParser:
                 return self._create_shield_status_event(groups, timestamp, raw_line, source_file)
             elif event_type == "CAPACITOR_STATUS":
                 return self._create_capacitor_status_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "MISSILE_RELOAD_COMPLETE":
+                return self._create_missile_reload_complete_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "MODULE_ACTIVATED":
+                return self._create_module_activated_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "MODULE_DEACTIVATED":
+                return self._create_module_deactivated_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "CHARGES_DEPLETED":
+                return self._create_charges_depleted_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "MODULE_LOADING":
+                return self._create_module_loading_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "CARGO_APPROACH":
+                return self._create_cargo_approach_event(groups, timestamp, raw_line, source_file)
+            # Boss events
+            elif event_type == "KARYBDIS_TYRANNOS_DETECTED":
+                return self._create_karybdis_tyrannos_detected_event(groups, timestamp, raw_line, source_file)
+            elif event_type == "KARYBDIS_TYRANNOS_OUTGOING":
+                return self._create_karybdis_tyrannos_outgoing_event(groups, timestamp, raw_line, source_file)
             # Navigation events
             elif event_type in ["WARP_START", "WARP_END", "DOCK_REQUEST", "UNDOCK_REQUEST", 
                                "DOCKED", "UNDOCKED", "JUMP_GATE", "JUMP_WORMHOLE"]:
@@ -410,24 +427,49 @@ class LogParser:
         if len(groups) < 5:
             logger.warning(f"Insufficient groups for drone hit: {len(groups)}")
             return None
-        
-        drone_name = groups[1] if len(groups) > 1 else "Unknown"
-        damage = int(groups[2]) if len(groups) > 2 and groups[2] else 0
-        damage_type = groups[3] if len(groups) > 3 else "Kinetic"
-        from_entity = groups[4] if len(groups) > 4 else "Unknown"
-        
-        return GameEvent(
-            type=EventType.DRONE_HIT,
-            timestamp=timestamp,
-            subject=drone_name,
-            meta={
-                "damage": damage,
-                "damage_type": damage_type,
-                "from_entity": from_entity
-            },
-            raw_line=raw_line,
-            source_file=source_file
-        )
+
+        # Handle both old and new pattern formats
+        if len(groups) == 5:
+            # New pattern: timestamp, damage, target, drone_type, hit_type
+            damage = int(groups[1]) if groups[1] else 0
+            target = groups[2] if len(groups) > 2 else "Unknown"
+            drone_type = groups[3] if len(groups) > 3 else "Unknown Drone"
+            hit_type = groups[4] if len(groups) > 4 else "Hits"
+            
+            return GameEvent(
+                type=EventType.DRONE_HIT,
+                timestamp=timestamp,
+                subject=drone_type,
+                meta={
+                    "damage": damage,
+                    "target": target,
+                    "drone_type": drone_type,
+                    "hit_type": hit_type,
+                    "status": "dealing_damage"
+                },
+                raw_line=raw_line,
+                source_file=source_file,
+                priority=1  # Medium priority - tactical reminder
+            )
+        else:
+            # Old pattern: timestamp, drone_name, damage, damage_type, from_entity
+            drone_name = groups[1] if len(groups) > 1 else "Unknown"
+            damage = int(groups[2]) if len(groups) > 2 and groups[2] else 0
+            damage_type = groups[3] if len(groups) > 3 else "Kinetic"
+            from_entity = groups[4] if len(groups) > 4 else "Unknown"
+
+            return GameEvent(
+                type=EventType.DRONE_HIT,
+                timestamp=timestamp,
+                subject=drone_name,
+                meta={
+                    "damage": damage,
+                    "damage_type": damage_type,
+                    "from_entity": from_entity
+                },
+                raw_line=raw_line,
+                source_file=source_file
+            )
     
     def _create_warp_scramble_event(self, groups: tuple, timestamp: datetime, 
                                    raw_line: str, source_file: Optional[str]) -> GameEvent:
@@ -562,6 +604,144 @@ class LogParser:
             source_file=source_file
         )
     
+    def _create_missile_reload_complete_event(self, groups: tuple, timestamp: datetime, 
+                                            raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create missile reload complete event."""
+        if len(groups) < 5:
+            logger.warning(f"Insufficient groups for missile reload complete: {len(groups)}")
+            return None
+        
+        damage = int(groups[1]) if groups[1] else 0
+        target = groups[2] if len(groups) > 2 else "Unknown Target"
+        missile_type = groups[3] if len(groups) > 3 else "Unknown Missile"
+        hit_type = groups[4] if len(groups) > 4 else "Hits"
+        
+        return GameEvent(
+            type=EventType.MISSILE_RELOAD_COMPLETE,
+            timestamp=timestamp,
+            subject="Missile Launcher",
+            meta={
+                "damage": damage,
+                "target": target,
+                "missile_type": missile_type,
+                "hit_type": hit_type,
+                "status": "reloaded_and_firing"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=1  # Medium priority - tactical reminder
+        )
+    
+    def _create_module_activated_event(self, groups: tuple, timestamp: datetime, 
+                                     raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create module activated event."""
+        if len(groups) < 2:
+            logger.warning(f"Insufficient groups for module activated: {len(groups)}")
+            return None
+        
+        module_name = groups[1] if len(groups) > 1 else "Unknown Module"
+        
+        return GameEvent(
+            type=EventType.MODULE_ACTIVATED,
+            timestamp=timestamp,
+            subject=module_name,
+            meta={
+                "module": module_name,
+                "status": "activated"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=2  # Low priority - informational
+        )
+    
+    def _create_module_deactivated_event(self, groups: tuple, timestamp: datetime, 
+                                       raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create module deactivated event."""
+        if len(groups) < 2:
+            logger.warning(f"Insufficient groups for module deactivated: {len(groups)}")
+            return None
+        
+        module_name = groups[1] if len(groups) > 1 else "Unknown Module"
+        
+        return GameEvent(
+            type=EventType.MODULE_DEACTIVATED,
+            timestamp=timestamp,
+            subject=module_name,
+            meta={
+                "module": module_name,
+                "status": "deactivated"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=2  # Low priority - informational
+        )
+    
+    def _create_charges_depleted_event(self, groups: tuple, timestamp: datetime, 
+                                     raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create charges depleted event."""
+        if len(groups) < 2:
+            logger.warning(f"Insufficient groups for charges depleted: {len(groups)}")
+            return None
+        
+        module_name = groups[1] if len(groups) > 1 else "Unknown Module"
+        
+        return GameEvent(
+            type=EventType.CHARGES_DEPLETED,
+            timestamp=timestamp,
+            subject=module_name,
+            meta={
+                "module": module_name,
+                "status": "charges_depleted"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=1  # Medium priority - tactical reminder
+        )
+    
+    def _create_module_loading_event(self, groups: tuple, timestamp: datetime, 
+                                   raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create module loading event."""
+        if len(groups) < 2:
+            logger.warning(f"Insufficient groups for module loading: {len(groups)}")
+            return None
+        
+        module_name = groups[1] if len(groups) > 1 else "Unknown Module"
+        
+        return GameEvent(
+            type=EventType.MODULE_LOADING,
+            timestamp=timestamp,
+            subject=module_name,
+            meta={
+                "module": module_name,
+                "status": "loading"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=2  # Low priority - informational
+        )
+    
+    def _create_cargo_approach_event(self, groups: tuple, timestamp: datetime, 
+                                   raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create cargo approach event."""
+        if len(groups) < 2:
+            logger.warning(f"Insufficient groups for cargo approach: {len(groups)}")
+            return None
+        
+        cargo_name = groups[1] if len(groups) > 1 else "Unknown Cargo"
+        
+        return GameEvent(
+            type=EventType.CARGO_APPROACH,
+            timestamp=timestamp,
+            subject=cargo_name,
+            meta={
+                "cargo": cargo_name,
+                "status": "approaching"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=2  # Low priority - informational
+        )
+    
     def reload_patterns(self) -> None:
         """Reload patterns from file."""
         try:
@@ -570,6 +750,56 @@ class LogParser:
         except Exception as e:
             logger.error(f"Failed to reload patterns: {e}")
     
+    def _create_karybdis_tyrannos_detected_event(self, groups: tuple, timestamp: datetime, 
+                                               raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create Karybdis Tyrannos detected event."""
+        if len(groups) < 3:
+            logger.warning(f"Insufficient groups for Karybdis Tyrannos detected: {len(groups)}")
+            return None
+        
+        damage = int(groups[1]) if groups[1] else 0
+        damage_type = groups[2] if len(groups) > 2 else "Hits"
+        
+        return GameEvent(
+            type=EventType.KARYBDIS_TYRANNOS_DETECTED,
+            timestamp=timestamp,
+            subject="Karybdis Tyrannos",
+            meta={
+                "damage": damage,
+                "damage_type": damage_type,
+                "boss_type": "Karybdis Tyrannos",
+                "threat_level": "critical"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=0  # Highest priority - critical boss
+        )
+    
+    def _create_karybdis_tyrannos_outgoing_event(self, groups: tuple, timestamp: datetime, 
+                                               raw_line: str, source_file: Optional[str]) -> GameEvent:
+        """Create Karybdis Tyrannos outgoing damage event."""
+        if len(groups) < 3:
+            logger.warning(f"Insufficient groups for Karybdis Tyrannos outgoing: {len(groups)}")
+            return None
+        
+        damage = int(groups[1]) if groups[1] else 0
+        damage_type = groups[2] if len(groups) > 2 else "Hits"
+        
+        return GameEvent(
+            type=EventType.KARYBDIS_TYRANNOS_OUTGOING,
+            timestamp=timestamp,
+            subject="Karybdis Tyrannos",
+            meta={
+                "damage": damage,
+                "damage_type": damage_type,
+                "boss_type": "Karybdis Tyrannos",
+                "threat_level": "critical"
+            },
+            raw_line=raw_line,
+            source_file=source_file,
+            priority=0  # Highest priority - critical boss
+        )
+
     def get_pattern_info(self) -> Dict[str, Any]:
         """Get information about loaded patterns.
         

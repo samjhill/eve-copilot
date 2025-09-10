@@ -34,7 +34,7 @@ rules:
   # E-war alerts (same as general but faster response)
   you_scrammed_abyssal:
     enabled: true
-    event_types: ["YouScrammed"]
+    event_types: ["WarpScramble"]
     cooldown_ms: 8000        # 8 second cooldown (faster than general)
     priority: 0              # High priority (safety)
     voice_prompt: "You are scrambled"
@@ -42,7 +42,7 @@ rules:
 
   you_webbed_abyssal:
     enabled: true
-    event_types: ["YouWebbed"]
+    event_types: ["WebEffect"]
     cooldown_ms: 6000        # 6 second cooldown (faster than general)
     priority: 1              # Medium priority
     voice_prompt: "You are webbed"
@@ -51,7 +51,7 @@ rules:
   # Capacitor management (critical for Abyssals)
   cap_neutralized_abyssal:
     enabled: true
-    event_types: ["YouNeuted"]
+    event_types: ["EnergyNeutralization"]
     cooldown_ms: 5000        # 5 second cooldown (faster than general)
     priority: 0              # High priority (safety)
     voice_prompt: "Capacitor neutralized"
@@ -59,7 +59,7 @@ rules:
 
   cap_low_abyssal:
     enabled: true
-    event_types: ["CapLow"]
+    event_types: ["CapacitorStatus"]
     conditions:
       cap_threshold: 25      # Alert when cap below 25% (higher than general)
     cooldown_ms: 8000        # 8 second cooldown (faster than general)
@@ -70,7 +70,7 @@ rules:
   # Shield management
   shield_low_abyssal:
     enabled: true
-    event_types: ["ShieldLow"]
+    event_types: ["ShieldStatus"]
     conditions:
       shield_threshold: 50   # Alert when shield below 50%
     cooldown_ms: 10000       # 10 second cooldown (faster than general)
@@ -140,10 +140,10 @@ rules:
     enabled: true
     event_types: ["IncomingDamage"]
     conditions:
-      min_events: 1          # Trigger after 1 damage event (aggressive)
-      sustained_damage: 300  # Very low threshold for testing
-    cooldown_ms: 2000        # 2 second cooldown
-    window_ms: 800           # 0.8 second window (very fast detection)
+      min_events: 3          # Trigger after 3 damage events (less spammy)
+      sustained_damage: 1500 # Higher threshold for actual spikes
+    cooldown_ms: 8000        # 8 second cooldown (less frequent)
+    window_ms: 2000          # 2 second window (more reasonable)
     priority: 0              # High priority (safety)
     voice_prompt: "Damage spike"
     description: "Sensitive damage spike detection for Abyssal scenarios"
@@ -263,3 +263,44 @@ rules:
     priority: 1              # Medium priority (tactical)
     voice_prompt: "Recommended target: {target_name}"
     description: "Recommend the most dangerous enemy to target based on damage output and threat level"
+
+  # Missile reload completion reminder
+  missile_reload_reminder:
+    enabled: true
+    event_types: ["MissileReloadComplete"]
+    cooldown_ms: 5000        # 5 second cooldown
+    priority: 1              # Medium priority (tactical reminder)
+    voice_prompt: "Missiles reloaded - re-enable launchers"
+    description: "Reminder to re-enable missile launchers after they finish reloading"
+
+  # Karybdis Tyrannos boss detection and tactical guidance
+  karybdis_tyrannos_detected:
+    enabled: true
+    event_types: ["KarybdisTyrannosDetected"]
+    cooldown_ms: 30000       # 30 second cooldown (only once per encounter)
+    priority: 0              # Highest priority (critical boss)
+    voice_prompt: "Karybdis Tyrannos detected! Approach at angle, then orbit close!"
+    description: "Critical alert when Karybdis Tyrannos boss is detected - provides tactical guidance"
+
+  karybdis_tyrannos_tactical_reminder:
+    enabled: true
+    event_types: ["KarybdisTyrannosOutgoing"]
+    conditions:
+      min_events: 3          # Trigger after dealing some damage
+    cooldown_ms: 15000       # 15 second cooldown
+    window_ms: 5000          # 5 second window
+    priority: 0              # Highest priority (tactical guidance)
+    voice_prompt: "Maintain close orbit! Stay under 5km!"
+    description: "Tactical reminder to maintain close orbit around Karybdis Tyrannos"
+
+  karybdis_tyrannos_damage_warning:
+    enabled: true
+    event_types: ["KarybdisTyrannosDetected"]
+    conditions:
+      min_events: 1          # Any damage from Karybdis
+      sustained_damage: 1000 # High damage threshold
+    cooldown_ms: 10000       # 10 second cooldown
+    window_ms: 3000          # 3 second window
+    priority: 0              # Highest priority (safety)
+    voice_prompt: "Critical damage from Karybdis! Get closer immediately!"
+    description: "Warning when taking high damage from Karybdis Tyrannos - indicates need to get closer"

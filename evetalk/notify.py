@@ -262,6 +262,7 @@ class GTTSEngine(TTSEngine):
         super().__init__(config)
         self.name = "gtts"
         self.language = self.config.get('gtts_language', 'en')
+        self.tld = self.config.get('gtts_tld', 'us')
         self.slow = self.config.get('gtts_slow', False)
     
     def _init_engine(self) -> None:
@@ -294,7 +295,7 @@ class GTTSEngine(TTSEngine):
         
         try:
             # Generate speech file
-            tts = gTTS(text=text, lang=self.language, slow=self.slow)
+            tts = gTTS(text=text, lang=self.language, tld=self.tld, slow=self.slow)
             
             # Create temporary file
             temp_file = self.temp_dir / f"speech_{hash(text)}.mp3"

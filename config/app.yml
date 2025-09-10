@@ -21,10 +21,10 @@ speech:
   
   # TTS Engine selection (in order of preference)
   # Options: edge-tts (best quality, offline), gtts (high quality, online), pyttsx3 (basic, offline)
-  tts_engine: "pyttsx3"
+  tts_engine: "gtts"
   
   # Voice settings for pyttsx3 (fallback engine)
-  voice: "Samantha"        # Voice to use (Samantha is clear and natural)
+  voice: "Daniel"          # Voice to use (Daniel is clear and natural)
   voice_rate: 150          # Words per minute (50-300)
   voice_volume: 0.8        # Volume level (0.0-1.0)
   
@@ -35,6 +35,7 @@ speech:
   
   # Google TTS settings
   gtts_language: "en"              # Language code (en, es, fr, de, etc.)
+  gtts_tld: "co.uk"                # Top-level domain for accent (us, co.uk, com.au, ca)
   gtts_slow: false                 # Slower speech for clarity
   
   priority_chime: true     # Play chime for priority alerts

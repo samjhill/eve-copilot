@@ -272,15 +272,17 @@ class Rule:
 class RulesEngine:
     """Rules engine that processes events and triggers notifications."""
     
-    def __init__(self, config, speech_notifier: SpeechNotifier):
+    def __init__(self, config, speech_notifier: SpeechNotifier, alert_callback=None):
         """Initialize rules engine.
         
         Args:
             config: Application configuration
             speech_notifier: Speech notification system
+            alert_callback: Optional callback function for alerts (alert_type, message, priority)
         """
         self.config = config
         self.speech_notifier = speech_notifier
+        self.alert_callback = alert_callback
         self.rules: List[Rule] = []
         self.profiles: Dict[str, Dict[str, Any]] = {}
         
@@ -291,6 +293,7 @@ class RulesEngine:
         # Performance tracking
         self.events_processed = 0
         self.rules_triggered = 0
+        self.alerts_sent = 0
         self.last_performance_reset = time.time()
     
     def _load_profiles(self) -> None:
@@ -447,8 +450,26 @@ class RulesEngine:
                     event=event
                 )
                 logger.info(f"Rule '{rule.name}' triggered: {voice_prompt}")
+                
+                # Send alert to dashboard if callback is available
+                if self.alert_callback:
+                    self.alert_callback(
+                        alert_type=rule.name,
+                        message=voice_prompt,
+                        priority=rule.priority
+                    )
+                    self.alerts_sent += 1
             else:
                 logger.debug(f"Rule '{rule.name}' triggered (no voice prompt)")
+                
+                # Send alert to dashboard even without voice prompt
+                if self.alert_callback:
+                    self.alert_callback(
+                        alert_type=rule.name,
+                        message=f"Rule '{rule.name}' triggered",
+                        priority=rule.priority
+                    )
+                    self.alerts_sent += 1
                 
         except Exception as e:
             logger.error(f"Failed to trigger rule '{rule.name}': {e}")
@@ -659,6 +680,7 @@ class RulesEngine:
             'enabled_rules': len([r for r in self.rules if r.enabled]),
             'events_processed': self.events_processed,
             'rules_triggered': self.rules_triggered,
+            'alerts_sent': self.alerts_sent,
             'performance_throttled': self._should_throttle_events(time.time()),
             'speech_enabled': speech_enabled
         }
